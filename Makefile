@@ -17,3 +17,7 @@ build-binaries:
 .PHONY: imports
 imports:
 	goimports -w -local 'github.com/dkharms/chronos' .
+
+.PHONY: test
+test:
+	go test -count=1 -v ./...
