@@ -1,0 +1,11 @@
+goos: linux
+goarch: amd64
+pkg: github.com/ozontech/seq-db/pattern
+cpu: 12th Gen Intel(R) Core(TM) i5-12600K
+BenchmarkFindSequence_Random/tiny-16         	102575256	        11.72 ns/op	5461.91 MB/s	       0 B/op	       0 allocs/op
+BenchmarkFindSequence_Random/small-16        	76243033	        15.72 ns/op	16286.37 MB/s	       0 B/op	       0 allocs/op
+BenchmarkFindSequence_Random/medium-16       	18174138	        55.84 ns/op	18339.66 MB/s	       0 B/op	       0 allocs/op
+BenchmarkFindSequence_Random/large-16        	 2262572	       531.7 ns/op	30814.31 MB/s	       0 B/op	       0 allocs/op
+BenchmarkFindSequence_Random/extra-large-16  	   20184	     59050 ns/op	17757.45 MB/s	       0 B/op	       0 allocs/op
+PASS
+ok  	github.com/ozontech/seq-db/pattern	5.825s
