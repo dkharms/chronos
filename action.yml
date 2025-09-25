@@ -1,0 +1,44 @@
+name: chronos
+author: dkharms
+description: |
+  chronos provides functionality for storing benchmark results,
+  emitting comparisons of benchmark measurements across git commits
+  and visualizing results on your personal GitHub Pages deployment
+
+inputs:
+  benchmarks-file-path:
+    description: |
+      Path to benchmark results of your current workflow run
+  branch-storage:
+    description: |
+      This git branch will be used as a storage for benchmarks
+      measurements across all executions with `store` action
+    default: chronos-storage
+  branch-github-pages:
+    description: |
+      This git branch will be used as a storage for benchmarks
+      measurements across all executions with `store` action
+    default: gh-pages
+  action-to-perform:
+    description: |
+      You can perform `store` and/or `summarize` action.
+      - `store` action stores benchmark results in `branch-storage` git branch
+      - `summarize` action compares measurements from current run with previous one and adds job summary
+    required: true
+
+runs:
+  using: composite
+  steps:
+  - name: Setup Golang
+    uses: actions/setup-go@v5
+    with:
+      go-version: '1.25'
+      cache: true
+
+  - name: Build binary
+    shell: bash
+    run: go build -o chronos cmd/chronos/main.go
+
+  - name: Run binary
+    shell: bash
+    run: ./chronos
