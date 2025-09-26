@@ -24,9 +24,12 @@ func main() {
 	branch := "chronos-storage"
 	owner, repository := ctx.Repo()
 
+	token := action.GetInput("github-token")
 	err = gitops.WithTransient(
-		context.Background(), action.GetInput("github-token"), owner, repository,
+		context.Background(), token, owner, repository,
 		func(ctx context.Context, repo *git.Repository, worktree *git.Worktree) error {
+			action.Errorf("length of token: %d", len(token))
+
 			if err := gitops.Fetch(ctx, repo, branch); err != nil {
 				return err
 			}
