@@ -1,0 +1,13 @@
+on: [push]
+
+jobs:
+  hello_world_job:
+    runs-on: ubuntu-latest
+    name: A job to say hello
+    steps:
+      - uses: actions/checkout@v5
+      - id: foo
+        uses: dkharms/chronos@5b7ea6b269516bcc50385390b53b9097c7eb2b87
+        with:
+          benchmarks-file-path: output.txt
+          action-to-perform: store

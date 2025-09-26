@@ -25,7 +25,7 @@ func main() {
 	}
 
 	_, repository := ctx.Repo()
-	gitops.WithRepositoryAndBranch(
+	err = gitops.WithRepositoryAndBranch(
 		context.Background(), repository, "chronos-storage",
 		func(r *git.Repository, w *git.Worktree, path string) error {
 			seriesPath := filepath.Join(path, ".chronos")
@@ -77,4 +77,8 @@ func main() {
 			})
 		},
 	)
+
+	if err != nil {
+		panic(err)
+	}
 }
