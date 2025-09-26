@@ -12,7 +12,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - id: foo
-        uses: dkharms/chronos@e1be5273417ce01ab023d5e9eddfac3ee51f5e87
+        uses: dkharms/chronos@9ffdb7fde3e958d897a71217f50ad50bcc2eb019
         with:
           github_token: ${{ github.token }}
           benchmarks_file_path: output.txt
