@@ -23,7 +23,7 @@ func main() {
 	branch := "chronos-storage"
 	owner, repository := ctx.Repo()
 
-	token := action.GetInput("github-token")
+	token := action.GetInput("github_token")
 	action.Errorf("length of token: %d", len(token))
 
 	err = gitops.WithTransient(
