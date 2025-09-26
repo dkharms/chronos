@@ -11,10 +11,6 @@ import (
 	"github.com/go-git/go-git/v6/plumbing/object"
 )
 
-const (
-	repoTpl = "https://%s@github.com/%s/%s.git"
-)
-
 func Fetch(ctx context.Context, repo *git.Repository, branch string) error {
 	return repo.FetchContext(ctx, &git.FetchOptions{
 		RefSpecs: []config.RefSpec{config.RefSpec(branch + ":" + branch)},
