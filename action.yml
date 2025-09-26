@@ -47,3 +47,9 @@ runs:
   - name: Run binary
     shell: bash
     run: ./chronos
+    env:
+      INPUT_GITHUB_TOKEN: ${{ inputs.github-token }}
+      INPUT_BENCHMARKS_FILE_PATH: ${{ inputs.benchmarks-file-path }}
+      INPUT_BRANCH_STORAGE: ${{ inputs.branch-storage }}
+      INPUT_BRANCH_GITHUB_PAGES: ${{ inputs.branch-github-pages }}
+      INPUT_ACTION_TO_PERFORM: ${{ inputs.action-to-perform }}
