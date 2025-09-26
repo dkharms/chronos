@@ -6,9 +6,14 @@ description: |
   and visualizing results on your personal GitHub Pages deployment
 
 inputs:
+  github-token:
+    description: |
+      Your GitHub token
+    required: true
   benchmarks-file-path:
     description: |
       Path to benchmark results of your current workflow run
+    required: true
   branch-storage:
     description: |
       This git branch will be used as a storage for benchmarks

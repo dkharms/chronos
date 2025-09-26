@@ -1,11 +1,17 @@
 package parser
 
 import (
+	_ "embed"
 	"io"
 
 	"golang.org/x/perf/benchfmt"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
+)
+
+var (
+	//go:embed testdata/gotool.txt
+	GotoolOutput string
 )
 
 type goparser struct {

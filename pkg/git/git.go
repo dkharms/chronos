@@ -2,23 +2,23 @@ package git
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/go-git/go-git/v6"
-	"github.com/go-git/go-git/v6/plumbing"
 )
 
 const (
 	repoPath = "/tmp/chronos"
 )
 
-func WithRepositoryAndBranch(
+func WithTransient(
 	ctx context.Context,
-	repoURL, branch string,
-	do func(*git.Repository, *git.Worktree, string) error,
+	token, owner, repository string,
+	do func(context.Context, *git.Repository, *git.Worktree) error,
 ) error {
 	repo, err := git.PlainCloneContext(ctx, repoPath, &git.CloneOptions{
-		URL: repoURL,
+		URL: fmt.Sprintf(repoTpl, token, owner, repository),
 	})
 	if err != nil {
 		return err
@@ -30,15 +30,15 @@ func WithRepositoryAndBranch(
 		return err
 	}
 
-	if err := worktree.Checkout(&git.CheckoutOptions{
-		Branch: plumbing.NewBranchReferenceName(branch),
-	}); err != nil {
+	dir, err := os.Getwd()
+	if err != nil {
+		return err
+	}
+	defer os.Chdir(dir)
+
+	if err := os.Chdir(repoPath); err != nil {
 		return err
 	}
 
-	if err := do(repo, worktree, repoPath); err != nil {
-		return err
-	}
-
-	return nil
+	return do(ctx, repo, worktree)
 }
