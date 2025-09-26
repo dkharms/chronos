@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"os"
-	"strings"
+	"time"
 
 	"github.com/go-git/go-git/v6"
 	"github.com/sethvargo/go-githubactions"
 
 	gitops "github.com/dkharms/chronos/pkg/git"
-	"github.com/dkharms/chronos/pkg/parser"
 )
 
 func main() {
@@ -25,11 +24,11 @@ func main() {
 	owner, repository := ctx.Repo()
 
 	token := action.GetInput("github-token")
+	action.Errorf("length of token: %d", len(token))
+
 	err = gitops.WithTransient(
 		context.Background(), token, owner, repository,
 		func(ctx context.Context, repo *git.Repository, worktree *git.Worktree) error {
-			action.Errorf("length of token: %d", len(token))
-
 			if err := gitops.Fetch(ctx, repo, branch); err != nil {
 				return err
 			}
@@ -38,8 +37,6 @@ func main() {
 				return err
 			}
 
-			results := parser.NewGoParser(strings.NewReader(parser.GotoolOutput)).Parse()
-
 			f, err := os.OpenFile(".chronos", os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0o644)
 			if err != nil {
 				return err
@@ -47,7 +44,7 @@ func main() {
 			defer f.Close()
 
 			enc := json.NewEncoder(f)
-			if err := enc.Encode(results); err != nil {
+			if err := enc.Encode(time.Now().String()); err != nil {
 				return err
 			}
 
