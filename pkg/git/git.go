@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/go-git/go-git/v6"
+	"github.com/go-git/go-git/v6/plumbing/transport/http"
 )
 
 const (
@@ -18,7 +19,11 @@ func WithTransient(
 	do func(context.Context, *git.Repository, *git.Worktree) error,
 ) error {
 	repo, err := git.PlainCloneContext(ctx, repoPath, &git.CloneOptions{
-		URL: fmt.Sprintf(repoTpl, token, owner, repository),
+		URL: fmt.Sprintf("https://github.com/%s/%s.git", owner, repository),
+		Auth: &http.BasicAuth{
+			Username: "x-access-token",
+			Password: token,
+		},
 	})
 	if err != nil {
 		return err
