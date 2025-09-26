@@ -1,5 +1,10 @@
 on: [push]
 
+permissions:
+  contents: write
+  deployments: write
+  pull-requests: write
+
 jobs:
   hello_world_job:
     runs-on: ubuntu-latest
@@ -7,8 +12,8 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - id: foo
-        uses: dkharms/chronos@56c863adc89708d4d769caf4a1007b4df6c78b37
+        uses: dkharms/chronos@10e279162b1aa73ffe3aa3335ac2d97e4bfcc614
         with:
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ github.token }}
           benchmarks-file-path: output.txt
           action-to-perform: store
