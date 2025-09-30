@@ -67,7 +67,7 @@ func Save(gctx Context) error {
 }
 
 func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
-	f, err := os.OpenFile(".chronos", os.O_CREATE|os.O_RDONLY, 0o644)
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0o644)
 	if err != nil {
 		return nil, err
 	}
@@ -94,7 +94,7 @@ func saveMergedBenchmarks(merged []benchmark.Series) error {
 		os.Remove(path)
 	}(out.Name())
 
-	if json.NewEncoder(out).Encode(merged); err != nil {
+	if err := json.NewEncoder(out).Encode(merged); err != nil {
 		return err
 	}
 
