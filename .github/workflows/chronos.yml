@@ -27,5 +27,5 @@ jobs:
         uses: dkharms/chronos@5efee0b63ed8ca6d7424f937978bd36f6b413bab
         with:
           github-token: ${{ github.token }}
-          benchmarks-file-path: ${{ env.HOME }}/gotool.txt
+          benchmarks-file-path: $HOME/gotool.txt
           action-to-perform: save
