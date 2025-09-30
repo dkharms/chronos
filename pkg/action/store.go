@@ -12,6 +12,7 @@ import (
 
 	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
+	"github.com/dkharms/chronos/pkg/parser"
 )
 
 const (
@@ -40,7 +41,7 @@ func Save(gctx Context) error {
 				return err
 			}
 
-			incoming, err := loadBenchmarksSeries(gctx.InputFilepath)
+			incoming, err := parseBenchmarkSeries(gctx.CommitHash, gctx.InputFilepath)
 			if err != nil {
 				return err
 			}
@@ -78,6 +79,27 @@ func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
 		if !errors.Is(err, io.EOF) {
 			return nil, err
 		}
+	}
+
+	return series, nil
+}
+
+func parseBenchmarkSeries(commitHash, path string) ([]benchmark.Series, error) {
+	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0o644)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	raw := parser.NewGoParser(f).Parse()
+
+	var series []benchmark.Series
+	for _, r := range raw {
+		r.CommitHash = commitHash
+		series = append(series, benchmark.Series{
+			Name:   r.Name,
+			Points: []benchmark.Result{r},
+		})
 	}
 
 	return series, nil
