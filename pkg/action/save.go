@@ -16,41 +16,30 @@ import (
 )
 
 const (
-	TimeoutActionStore    = time.Minute
+	TimeoutActionSave     = time.Minute
 	ChronosMergedFilename = ".chronos"
 	CommitMessage         = "chore: new benchmark series just dropped"
 )
 
 func Save(gctx Context) error {
-	ctx, cancel := context.WithTimeout(context.Background(), TimeoutActionStore)
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		TimeoutActionSave,
+	)
+
 	defer cancel()
 
 	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner, gctx.Repository,
-		func(ctx context.Context, r *git.Repository, w *git.Worktree) error {
-			if err := gitops.Fetch(ctx, r, gctx.BranchStorage); err != nil {
-				return err
-			}
-
-			if err := gitops.Checkout(w, gctx.BranchStorage); err != nil {
-				return err
-			}
-
-			ProcessBenchmarks(gctx)
-
-			if err := gitops.Add(w, ChronosMergedFilename); err != nil {
-				return err
-			}
-
-			if err := gitops.Commit(w, CommitMessage, ChronosMergedFilename); err != nil {
-				return err
-			}
-
-			if err := gitops.Push(ctx, r, gctx.BranchStorage); err != nil {
-				return err
-			}
-
-			return nil
+		ctx, gctx.Token, gctx.Owner,
+		gctx.Repository, gctx.BranchStorage,
+		func(
+			ctx context.Context,
+			repository *git.Repository,
+			worktree *git.Worktree,
+		) ([]string, string, error) {
+			return []string{ChronosMergedFilename},
+				CommitMessage,
+				ProcessBenchmarks(gctx)
 		},
 	)
 }

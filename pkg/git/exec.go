@@ -28,7 +28,7 @@ func Add(worktree *git.Worktree, filename string) error {
 	return err
 }
 
-func Commit(worktree *git.Worktree, message, filename string) error {
+func Commit(worktree *git.Worktree, message string) error {
 	author := &object.Signature{
 		Name:  "github-actions[bot]",
 		Email: "github-actions[bot]@users.noreply.github.com",
