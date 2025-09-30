@@ -7,19 +7,19 @@ import (
 )
 
 type Series struct {
-	Name   string
-	Points []Result
+	Name   string   `json:"name"`
+	Points []Result `json:"points"`
 }
 
 type Result struct {
-	Name       string
-	CommitHash string
-	Metrics    []Metric
+	Name       string   `json:"-"`
+	CommitHash string   `json:"commit_hash"`
+	Metrics    []Metric `json:"metrics"`
 }
 
 type Metric struct {
-	Unit  string
-	Value float64
+	Unit  string  `json:"unit"`
+	Value float64 `json:"value"`
 }
 
 func (m Metric) UnitClass() benchunit.Class {
