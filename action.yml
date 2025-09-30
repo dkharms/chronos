@@ -6,25 +6,25 @@ description: |
   and visualizing results on your personal GitHub Pages deployment
 
 inputs:
-  github_token:
+  github-token:
     description: |
       Your GitHub token
     required: true
-  benchmarks_file_path:
+  benchmarks-file-path:
     description: |
       Path to benchmark results of your current workflow run
     required: true
-  branch_storage:
+  branch-storage:
     description: |
       This git branch will be used as a storage for benchmarks
       measurements across all executions with `store` action
     default: chronos-storage
-  branch_github_pages:
+  branch-github-pages:
     description: |
       This git branch will be used as a storage for benchmarks
       measurements across all executions with `store` action
     default: gh-pages
-  action_to_perform:
+  action-to-perform:
     description: |
       You can perform `store` and/or `summarize` action.
       - `store` action stores benchmark results in `branch-storage` git branch
@@ -48,8 +48,8 @@ runs:
     shell: bash
     run: ./chronos
     env:
-      INPUT_GITHUB_TOKEN: ${{ inputs.github_token }}
-      INPUT_BENCHMARKS_FILE_PATH: ${{ inputs.benchmarks_file_path }}
-      INPUT_BRANCH_STORAGE: ${{ inputs.branch_storage }}
-      INPUT_BRANCH_GITHUB_PAGES: ${{ inputs.branch_github_pages }}
-      INPUT_ACTION_TO_PERFORM: ${{ inputs.action_to_perform }}
+      INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
+      INPUT_BENCHMARKS-FILE-PATH: ${{ inputs.benchmarks-file-path }}
+      INPUT_BRANCH-STORAGE: ${{ inputs.branch-storage }}
+      INPUT_BRANCH-GITHUB-PAGES: ${{ inputs.branch-github-pages }}
+      INPUT_ACTION-TO-PERFORM: ${{ inputs.action-to-perform }}

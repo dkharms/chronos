@@ -9,8 +9,7 @@ import (
 )
 
 const (
-	repoPath = "/tmp/chronos"
-	repoTpl  = "https://x-access-token:%s@github.com/%s/%s.git"
+	repoTpl = "https://x-access-token:%s@github.com/%s/%s.git"
 )
 
 func WithTransient(
@@ -18,13 +17,18 @@ func WithTransient(
 	token, owner, repository string,
 	do func(context.Context, *git.Repository, *git.Worktree) error,
 ) error {
-	repo, err := git.PlainCloneContext(ctx, repoPath, &git.CloneOptions{
+	tmp, err := os.MkdirTemp("", "")
+	if err != nil {
+		return err
+	}
+
+	repo, err := git.PlainCloneContext(ctx, tmp, &git.CloneOptions{
 		URL: fmt.Sprintf(repoTpl, token, owner, repository),
 	})
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(repoPath)
+	defer os.RemoveAll(tmp)
 
 	worktree, err := repo.Worktree()
 	if err != nil {
@@ -37,7 +41,7 @@ func WithTransient(
 	}
 	defer os.Chdir(dir)
 
-	if err := os.Chdir(repoPath); err != nil {
+	if err := os.Chdir(tmp); err != nil {
 		return err
 	}
 

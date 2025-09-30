@@ -1,70 +1,40 @@
 package main
 
 import (
-	"context"
-	"encoding/json"
-	"os"
-	"time"
+	"errors"
 
-	"github.com/go-git/go-git/v6"
 	"github.com/sethvargo/go-githubactions"
 
-	gitops "github.com/dkharms/chronos/pkg/git"
+	"github.com/dkharms/chronos/pkg/action"
 )
 
 func main() {
-	action := githubactions.New()
+	act := githubactions.New()
 
-	ctx, err := action.Context()
+	ctx, err := act.Context()
 	if err != nil {
 		panic(err)
 	}
 
-	branch := "chronos-storage"
-	owner, repository := ctx.Repo()
+	owner, repo := ctx.Repo()
+	newVar := action.Context{
+		Token:         act.GetInput("github-token"),
+		Owner:         owner,
+		Repository:    repo,
+		InputFilepath: act.GetInput("benchmarks-file-path"),
+		BranchStorage: act.GetInput("branch-storage"),
+		BranchPages:   act.GetInput("branch-github-pages"),
+	}
 
-	token := action.GetInput("github_token")
-	action.Errorf("length of token: %d", len(token))
+	var actErr error
+	switch act.GetInput("action-to-perform") {
+	case "save":
+		actErr = action.Save(newVar)
+	default:
+		actErr = errors.New("unknown 'action-to-perform'")
+	}
 
-	err = gitops.WithTransient(
-		context.Background(), token, owner, repository,
-		func(ctx context.Context, repo *git.Repository, worktree *git.Worktree) error {
-			if err := gitops.Fetch(ctx, repo, branch); err != nil {
-				return err
-			}
-
-			if err := gitops.Checkout(worktree, branch); err != nil {
-				return err
-			}
-
-			f, err := os.OpenFile(".chronos", os.O_TRUNC|os.O_CREATE|os.O_RDWR, 0o644)
-			if err != nil {
-				return err
-			}
-			defer f.Close()
-
-			enc := json.NewEncoder(f)
-			if err := enc.Encode(time.Now().String()); err != nil {
-				return err
-			}
-
-			if err := gitops.Add(worktree, ".chronos"); err != nil {
-				return err
-			}
-
-			if err := gitops.Commit(worktree, "some message", ".chronos"); err != nil {
-				return err
-			}
-
-			if err := gitops.Push(ctx, repo, branch); err != nil {
-				return err
-			}
-
-			return nil
-		},
-	)
-
-	if err != nil {
-		panic(err)
+	if actErr != nil {
+		act.Fatalf("action failed: %s", actErr)
 	}
 }

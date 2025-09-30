@@ -9,11 +9,6 @@ import (
 	"github.com/dkharms/chronos/pkg/benchmark"
 )
 
-var (
-	//go:embed testdata/gotool.txt
-	GotoolOutput string
-)
-
 type goparser struct {
 	r io.Reader
 }
