@@ -13,7 +13,7 @@ func main() {
 
 	ctx, err := act.Context()
 	if err != nil {
-		panic(err)
+		exit(err)
 	}
 
 	owner, repo := ctx.Repo()
@@ -37,6 +37,10 @@ func main() {
 	}
 
 	if actErr != nil {
-		act.Fatalf("action failed: %s", actErr)
+		exit(err)
 	}
+}
+
+func exit(err error) {
+	githubactions.Fatalf("failed: %s", err)
 }

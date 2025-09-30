@@ -19,8 +19,7 @@ import (
 const (
 	TimeoutActionSave     = time.Minute
 	ChronosMergedFilename = ".chronos"
-	// CommitMessage         = "chore: https://github.com/%s/%s/blob/%s"
-	CommitMessage = "chore: add benchmarks (%s)"
+	CommitMessage         = "chore: add benchmarks (%s)"
 )
 
 func Save(gctx Context) error {
@@ -40,7 +39,6 @@ func Save(gctx Context) error {
 			worktree *git.Worktree,
 		) ([]string, string, error) {
 			return []string{ChronosMergedFilename},
-				// fmt.Sprintf(CommitMessage, gctx.Owner, gctx.Repository, gctx.CommitHash),
 				fmt.Sprintf(CommitMessage, gctx.CommitHash),
 				ProcessBenchmarks(gctx)
 		},

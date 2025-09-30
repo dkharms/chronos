@@ -1,4 +1,8 @@
-on: [ push ]
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 permissions:
   contents: write
@@ -21,9 +25,12 @@ jobs:
 
       - name: Run Golang benchmarks
         shell: bash
-        run: cd examples/gotool/ && go test  -run='$^' -bench=. -benchmem | tee ${{ runner.temp }}/gotool.txt
+        run: cd examples/gotool/ && go test -run='$^' -bench=. -benchmem | tee ${{ runner.temp }}/gotool.txt
 
-      - name: Store benchmarks results
+      # Save benchmarks results only when branch
+      # was merged to main and previous job was successful.
+      - name: Save benchmarks results
+        if: ${{ success() && github.ref_name == 'main' }}
         uses: dkharms/chronos@8b15b482746a306e736ac934a282d8c150d56404
         with:
           github-token: ${{ github.token }}
