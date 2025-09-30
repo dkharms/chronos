@@ -1,4 +1,4 @@
-on: [push]
+on: [ push ]
 
 permissions:
   contents: write
@@ -6,14 +6,26 @@ permissions:
   pull-requests: write
 
 jobs:
-  hello_world_job:
+  example-benchmarks:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Job to run example benchmarks
     steps:
-      - uses: actions/checkout@v5
-      - id: foo
-        uses: dkharms/chronos@136457501ced50ec212bfaacfab60a100232eed8
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup Golang
+        uses: actions/setup-go@v5
         with:
-          github_token: ${{ github.token }}
-          benchmarks_file_path: output.txt
-          action_to_perform: store
+          go-version: '1.25'
+          cache: true
+
+      - name: Run Golang benchmarks
+        shell: bash
+        run: cd examples/gotool/ && go test  -run='$^' -bench=. -benchmem | tee $HOME/gotool.txt
+
+      - name: Store benchmarks results
+        uses: dkharms/chronos@ecb4d21d5fadeb6078192c9b895aebe0d534eb65
+        with:
+          github-token: ${{ github.token }}
+          benchmarks-file-path: ${{ env.HOME }}/gotool.txt
+          action-to-perform: save
