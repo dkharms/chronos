@@ -24,7 +24,7 @@ jobs:
         run: cd examples/gotool/ && go test  -run='$^' -bench=. -benchmem | tee $HOME/gotool.txt
 
       - name: Store benchmarks results
-        uses: dkharms/chronos@5efee0b63ed8ca6d7424f937978bd36f6b413bab
+        uses: dkharms/chronos@4f3671eed3f759313821629a4f14a4833fae759d
         with:
           github-token: ${{ github.token }}
           benchmarks-file-path: $HOME/gotool.txt
