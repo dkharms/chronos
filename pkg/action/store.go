@@ -24,7 +24,7 @@ func Save(gctx Context) error {
 	ctx, cancel := context.WithTimeout(context.Background(), TimeoutActionStore)
 	defer cancel()
 
-	gitops.WithTransient(
+	return gitops.WithTransient(
 		ctx, gctx.Token, gctx.Owner, gctx.Repository,
 		func(ctx context.Context, r *git.Repository, w *git.Worktree) error {
 			if err := gitops.Fetch(ctx, r, gctx.BranchStorage); err != nil {
@@ -64,8 +64,6 @@ func Save(gctx Context) error {
 			return nil
 		},
 	)
-
-	return nil
 }
 
 func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
