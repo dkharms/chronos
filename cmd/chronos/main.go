@@ -18,9 +18,11 @@ func main() {
 
 	owner, repo := ctx.Repo()
 	newVar := action.Context{
-		Token:         act.GetInput("github-token"),
-		Owner:         owner,
-		Repository:    repo,
+		Token:      act.GetInput("github-token"),
+		Owner:      owner,
+		Repository: repo,
+		CommitHash: ctx.Ref,
+
 		InputFilepath: act.GetInput("benchmarks-file-path"),
 		BranchStorage: act.GetInput("branch-storage"),
 		BranchPages:   act.GetInput("branch-github-pages"),

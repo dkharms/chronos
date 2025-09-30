@@ -1,11 +1,10 @@
 package action
 
 type Context struct {
-	CommitHash string
-
 	Token      string
 	Owner      string
 	Repository string
+	CommitHash string
 
 	InputFilepath string
 	BranchStorage string

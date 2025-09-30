@@ -36,19 +36,7 @@ func Save(gctx Context) error {
 				return err
 			}
 
-			collected, err := loadBenchmarksSeries(ChronosMergedFilename)
-			if err != nil {
-				return err
-			}
-
-			incoming, err := parseBenchmarkSeries(gctx.CommitHash, gctx.InputFilepath)
-			if err != nil {
-				return err
-			}
-
-			if err := saveMergedBenchmarks(benchmark.Merge(collected, incoming)); err != nil {
-				return err
-			}
+			ProcessBenchmarks(gctx)
 
 			if err := gitops.Add(w, ChronosMergedFilename); err != nil {
 				return err
@@ -65,6 +53,24 @@ func Save(gctx Context) error {
 			return nil
 		},
 	)
+}
+
+func ProcessBenchmarks(gctx Context) error {
+	collected, err := loadBenchmarksSeries(ChronosMergedFilename)
+	if err != nil {
+		return err
+	}
+
+	incoming, err := parseBenchmarkSeries(gctx.CommitHash, gctx.InputFilepath)
+	if err != nil {
+		return err
+	}
+
+	if err := saveMergedBenchmarks(benchmark.Merge(collected, incoming)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
