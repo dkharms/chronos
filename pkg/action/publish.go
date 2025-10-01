@@ -3,7 +3,9 @@ package action
 import (
 	"context"
 	_ "embed"
+	"encoding/json"
 	"fmt"
+	"html/template"
 	"os"
 	"time"
 
@@ -18,7 +20,7 @@ const (
 
 var (
 	//go:embed assets/index.html
-	TypescriptFile string
+	htmlTemplate string
 )
 
 func Publish(gctx Context) error {
@@ -53,11 +55,11 @@ func Publish(gctx Context) error {
 			return r.WithBranch(
 				ctx, gctx.BranchPages,
 				func() ([]string, string, error) {
-					if xerr := saveIndexFile(); xerr != nil {
+					if xerr := saveIndexFile(series); xerr != nil {
 						return nil, "", xerr
 					}
 
-					return []string{ChronosMergedFilename, "index.html"},
+					return []string{"index.html"},
 						fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
 						saveMergedBenchmarks(series)
 				},
@@ -66,16 +68,28 @@ func Publish(gctx Context) error {
 	)
 }
 
-func saveIndexFile() error {
-	f, err := os.OpenFile("index.html", os.O_CREATE|os.O_RDWR, 0o644)
+func saveIndexFile(series []benchmark.Series) error {
+	tmpl, err := template.New("index").Parse(htmlTemplate)
+	if err != nil {
+		return err
+	}
+
+	jsonData, err := json.Marshal(series)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile("index.html", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
 	defer f.Close()
 
-	if _, err := f.WriteString(TypescriptFile); err != nil {
-		return err
+	data := struct {
+		BenchmarkData template.JS
+	}{
+		BenchmarkData: template.JS(jsonData),
 	}
 
-	return nil
+	return tmpl.Execute(f, data)
 }

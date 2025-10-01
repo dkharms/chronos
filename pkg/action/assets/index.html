@@ -126,6 +126,9 @@
     </div>
 
     <script>
+        // Benchmark data will be injected here by the Go application
+        window.BENCHMARK_DATA = {{.BenchmarkData}};
+
         class BenchmarkVisualizer {
             constructor() {
                 this.data = [];
@@ -133,25 +136,21 @@
                 this.charts = new Map();
             }
 
-            async init() {
-                await this.loadData();
+            init() {
+                this.loadData();
                 this.setupEventListeners();
                 this.filteredData = [...this.data];
                 this.renderCharts();
             }
 
-            async loadData() {
+            loadData() {
                 try {
-                    const response = await fetch('.chronos');
-                    if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}`);
-                    }
-                    this.data = await response.json();
+                    this.data = window.BENCHMARK_DATA || [];
                 } catch (error) {
                     console.error('Failed to load benchmark data:', error);
                     this.data = [];
                     document.getElementById('chartsContainer').innerHTML =
-                        '<div class="no-results">Failed to load benchmark data. Make sure .chronos file exists.</div>';
+                        '<div class="no-results">Failed to load benchmark data.</div>';
                 }
             }
 
@@ -360,7 +359,7 @@
         // Initialize the visualizer when the page loads
         document.addEventListener('DOMContentLoaded', () => {
             const visualizer = new BenchmarkVisualizer();
-            visualizer.init().catch(console.error);
+            visualizer.init();
         });
     </script>
 </body>
