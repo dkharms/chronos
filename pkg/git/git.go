@@ -14,8 +14,8 @@ const (
 
 func WithTransient(
 	ctx context.Context,
-	token, owner, repositoryName, branch string,
-	do func(context.Context, *git.Repository, *git.Worktree) ([]string, string, error),
+	token, owner, repositoryName string,
+	fn func(context.Context, Repository) error,
 ) error {
 	tmp, err := os.MkdirTemp("", "")
 	if err != nil {
@@ -41,19 +41,36 @@ func WithTransient(
 	}
 	defer os.Chdir(dir)
 
-	if err := os.Chdir(tmp); err != nil {
+	return fn(ctx, Repository{
+		r: repository,
+		w: worktree,
+	})
+}
+
+type Repository struct {
+	r *git.Repository
+	w *git.Worktree
+}
+
+func (r Repository) WithBranch(
+	ctx context.Context, branch string,
+	fn func() ([]string, string, error),
+) error {
+	cur, err := r.r.Head()
+	if err != nil {
+		return err
+	}
+	defer Checkout(r.w, cur.String())
+
+	if err := Fetch(ctx, r.r, branch); err != nil {
 		return err
 	}
 
-	if err := Fetch(ctx, repository, branch); err != nil {
+	if err := Checkout(r.w, branch); err != nil {
 		return err
 	}
 
-	if err := Checkout(worktree, branch); err != nil {
-		return err
-	}
-
-	commitable, message, err := do(ctx, repository, worktree)
+	commitable, message, err := fn()
 	if err != nil {
 		return err
 	}
@@ -63,16 +80,16 @@ func WithTransient(
 	}
 
 	for _, c := range commitable {
-		if err := Add(worktree, c); err != nil {
+		if err := Add(r.w, c); err != nil {
 			return err
 		}
 	}
 
-	if err := Commit(worktree, message); err != nil {
+	if err := Commit(r.w, message); err != nil {
 		return err
 	}
 
-	if err := Push(ctx, repository, branch); err != nil {
+	if err := Push(ctx, r.r, branch); err != nil {
 		return err
 	}
 

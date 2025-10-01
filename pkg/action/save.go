@@ -9,8 +9,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-git/go-git/v6"
-
 	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
 	"github.com/dkharms/chronos/pkg/parser"
@@ -31,16 +29,16 @@ func Save(gctx Context) error {
 	defer cancel()
 
 	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner,
-		gctx.Repository, gctx.BranchStorage,
-		func(
-			ctx context.Context,
-			repository *git.Repository,
-			worktree *git.Worktree,
-		) ([]string, string, error) {
-			return []string{ChronosMergedFilename},
-				fmt.Sprintf(ActionSaveCommitMessage, gctx.CommitHash),
-				ProcessBenchmarks(gctx)
+		ctx, gctx.Token, gctx.Owner, gctx.Repository,
+		func(ctx context.Context, r gitops.Repository) error {
+			return r.WithBranch(
+				ctx, gctx.BranchStorage,
+				func() ([]string, string, error) {
+					return []string{ChronosMergedFilename},
+						fmt.Sprintf(ActionSaveCommitMessage, gctx.CommitHash),
+						ProcessBenchmarks(gctx)
+				},
+			)
 		},
 	)
 }

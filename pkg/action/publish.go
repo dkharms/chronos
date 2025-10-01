@@ -7,8 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/go-git/go-git/v6"
-
+	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
 )
 
@@ -31,33 +30,38 @@ func Publish(gctx Context) error {
 	defer cancel()
 
 	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner,
-		gctx.Repository, gctx.BranchStorage,
-		func(
-			ctx context.Context,
-			repository *git.Repository,
-			worktree *git.Worktree,
-		) ([]string, string, error) {
-			series, err := loadBenchmarksSeries(ChronosMergedFilename)
+		ctx, gctx.Token, gctx.Owner, gctx.Repository,
+		func(ctx context.Context, r gitops.Repository) error {
+			var series []benchmark.Series
+
+			err := r.WithBranch(
+				ctx, gctx.BranchStorage,
+				func() ([]string, string, error) {
+					xseries, err := loadBenchmarksSeries(ChronosMergedFilename)
+					if err != nil {
+						return nil, "", err
+					}
+					series = xseries
+					return nil, "", nil
+				},
+			)
+
 			if err != nil {
-				return nil, "", err
+				return err
 			}
 
-			if err := gitops.Fetch(ctx, repository, gctx.BranchPages); err != nil {
-				return nil, "", err
-			}
+			return r.WithBranch(
+				ctx, gctx.BranchPages,
+				func() ([]string, string, error) {
+					if xerr := saveIndexFile(); xerr != nil {
+						return nil, "", xerr
+					}
 
-			if err := gitops.Checkout(worktree, gctx.BranchPages); err != nil {
-				return nil, "", err
-			}
-
-			if err := saveIndexFile(); err != nil {
-				return nil, "", err
-			}
-
-			return []string{ChronosMergedFilename, "index.ts"},
-				fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
-				saveMergedBenchmarks(series)
+					return []string{ChronosMergedFilename, "index.ts"},
+						fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
+						saveMergedBenchmarks(series)
+				},
+			)
 		},
 	)
 }
