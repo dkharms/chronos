@@ -41,6 +41,10 @@ func WithTransient(
 	}
 	defer os.Chdir(dir)
 
+	if err := os.Chdir(tmp); err != nil {
+		return err
+	}
+
 	return fn(ctx, Repository{
 		r: repository,
 		w: worktree,
