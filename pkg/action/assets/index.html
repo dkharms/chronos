@@ -8,106 +8,139 @@
     <style>
         body {
             margin: 0;
-            padding: 20px;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f5f5f5;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            font-size: 14px;
+            line-height: 1.5;
         }
         .container {
             max-width: 85%;
             margin: 0 auto;
         }
         h1 {
-            color: #333;
-            margin-bottom: 30px;
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 32px;
             text-align: center;
+            font-weight: 600;
+            font-size: 30px;
+            letter-spacing: -0.025em;
         }
         .filter-section {
-            background: white;
-            padding: 20px;
+            background: hsl(0 0% 100%);
+            padding: 24px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
         }
         .filter-section label {
             display: block;
             margin-bottom: 8px;
-            font-weight: bold;
+            font-weight: 500;
+            font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
         }
         .filter-input {
             width: 300px;
-            padding: 8px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
+            padding: 8px 12px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            background: hsl(0 0% 100%);
             font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
+            transition: border-color 0.2s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: hsl(221.2 83.2% 53.3%);
+            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.2);
         }
         .clear-button {
-            margin-left: 10px;
+            margin-left: 8px;
             padding: 8px 16px;
-            background: #f44336;
-            color: white;
-            border: none;
-            border-radius: 4px;
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
         .clear-button:hover {
-            background: #d32f2f;
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
         }
         .charts-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 24px;
         }
         .chart-card {
-            border: 1px solid #e0e0e0;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 8px;
-            padding: 20px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 24px;
+            background: hsl(0 0% 100%);
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
         }
         .chart-title {
             margin: 0 0 20px 0;
-            color: #333;
-            font-size: 20px;
+            color: hsl(222.2 84% 4.9%);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            padding-bottom: 12px;
         }
         .unit-tab {
-            background: #f5f5f5;
-            border: 1px solid #ddd;
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
             padding: 8px 16px;
-            margin-right: 5px;
+            margin-right: 8px;
+            margin-bottom: 8px;
             cursor: pointer;
-            border-radius: 4px 4px 0 0;
-            font-size: 14px;
-            transition: all 0.3s;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
         }
         .unit-tab:hover {
-            background: #e9e9e9;
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
         }
         .unit-tab.active {
-            background: #007acc;
-            color: white;
-            border-color: #007acc;
+            background: hsl(222.2 47.4% 11.2%);
+            color: hsl(210 40% 98%);
+            border-color: hsl(222.2 47.4% 11.2%);
         }
         .tab-container {
             margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
         }
         .chart-wrapper {
             width: 100%;
-            height: 300px;
+            height: 350px;
         }
         .no-results {
             text-align: center;
-            color: #666;
-            font-size: 18px;
-            padding: 40px;
-            background: white;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 14px;
+            padding: 48px;
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
         }
         .loading {
             text-align: center;
-            padding: 40px;
-            font-size: 18px;
-            color: #666;
+            padding: 48px;
+            font-size: 14px;
+            color: hsl(215.4 16.3% 46.9%);
         }
     </style>
 </head>
@@ -127,6 +160,7 @@
     </div>
 
     <script>
+        
         // Benchmark data will be injected here by the Go application
         window.BENCHMARK_DATA = {{.BenchmarkData}};
 
@@ -135,7 +169,18 @@
                 this.data = [];
                 this.filteredData = [];
                 this.charts = new Map();
-                this.colors = ['#007acc', '#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#feca57', '#ff9ff3', '#54a0ff', '#5f27cd', '#00d2d3'];
+                this.colors = [
+                    'hsl(221.2 83.2% 53.3%)', // blue
+                    'hsl(142.1 76.2% 36.3%)', // green
+                    'hsl(346.8 77.2% 49.8%)', // red
+                    'hsl(258.3 89.5% 66.3%)', // purple
+                    'hsl(24.6 95% 53.1%)', // orange
+                    'hsl(262.1 83.3% 57.8%)', // violet
+                    'hsl(173.4 58.9% 39.1%)', // teal
+                    'hsl(43.3 96.4% 56.3%)', // yellow
+                    'hsl(197.4 71.4% 73.3%)', // sky
+                    'hsl(20.5 90.2% 48.2%)' // amber
+                ];
             }
 
             init() {
@@ -212,8 +257,8 @@
                 chartDiv.className = 'chart-card';
 
                 const units = this.getUnitsForSeries(series);
-                const tabsHtml = units.map((unit, index) =>
-                    `<button class="unit-tab ${index === 0 ? 'active' : ''}" data-unit="${unit}">
+                const tabsHtml = units.map((unit, tabIndex) =>
+                    `<button class="unit-tab ${tabIndex === 0 ? 'active' : ''}" data-unit="${unit}">
                         ${this.formatUnitName(unit)}
                     </button>`
                 ).join('');
@@ -228,12 +273,15 @@
 
                 container.appendChild(chartDiv);
 
-                const chartWrapper = chartDiv.querySelector('.chart-wrapper');
-                const chart = echarts.init(chartWrapper);
-                this.charts.set(series.name, chart);
+                // Use setTimeout to ensure DOM is fully rendered before initializing chart
+                setTimeout(() => {
+                    const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                    const chart = echarts.init(chartWrapper);
+                    this.charts.set(series.name, chart);
 
-                this.setupTabSwitching(chartDiv, series, chart, index);
-                this.renderChartForUnit(series, units[0], chart, index);
+                    this.setupTabSwitching(chartDiv, series, chart, index);
+                    this.renderChartForUnit(series, units[0], chart, index);
+                }, 10);
             }
 
             getUnitsForSeries(series) {
@@ -248,6 +296,32 @@
 
             formatUnitName(unit) {
                 return unit;
+            }
+
+            getRepositoryUrl() {
+                // Try to get repository URL from various sources
+                // 1. Check if we're on GitHub Pages
+                const hostname = window.location.hostname;
+                if (hostname.endsWith('.github.io')) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 3) {
+                        const username = parts[0];
+                        const repoName = window.location.pathname.split('/')[1] || parts[1];
+                        return `https://github.com/${username}/${repoName}`;
+                    }
+                }
+
+                // 2. Check for common GitHub repository patterns in URL
+                if (window.location.href.includes('github.com')) {
+                    const match = window.location.href.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                    if (match) {
+                        return `https://github.com/${match[1]}`;
+                    }
+                }
+
+                // 3. Default fallback - you can customize this for your specific repository
+                // For now, we'll try to construct from the page title or use a generic pattern
+                return 'https://github.com/dkharms/chronos'; // Update this to your actual repository
             }
 
             setupTabSwitching(chartDiv, series, chart, index) {
@@ -266,89 +340,159 @@
 
             renderChartForUnit(series, unit, chart, index) {
                 const data = [];
+                const commitHashes = [];
 
                 series.measurements.forEach(measurement => {
                     const metric = measurement.metrics.find(m => m.unit === unit);
                     if (metric) {
                         data.push([measurement.commit_hash.substring(0, 8), metric.value]);
+                        commitHashes.push(measurement.commit_hash);
                     }
                 });
 
-                data.sort((a, b) => a[0].localeCompare(b[0]));
+                // Sort both arrays together
+                const combined = data.map((item, idx) => ({ data: item, hash: commitHashes[idx] }));
+                combined.sort((a, b) => a.data[0].localeCompare(b.data[0]));
+                const sortedData = combined.map(item => item.data);
+                const sortedHashes = combined.map(item => item.hash);
 
                 const color = this.colors[index % this.colors.length];
                 const option = {
-                    title: {
-                        text: `${series.name} - ${this.formatUnitName(unit)}`,
-                        left: 'center',
-                        textStyle: {
-                            fontSize: 16,
-                            fontWeight: 'normal'
-                        }
-                    },
+                    animation: true,
                     tooltip: {
-                        trigger: 'axis',
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12
+                        },
                         formatter: (params) => {
-                            const point = params[0];
-                            return `Commit: ${point.name}<br/>Value: ${point.value[1].toLocaleString()} ${unit}`;
+                            return `Commit: ${params.name}<br/>Value: ${params.value[1].toLocaleString()} ${unit}`;
                         }
                     },
                     xAxis: {
                         type: 'category',
-                        name: 'Commit Hash',
-                        nameLocation: 'middle',
-                        nameGap: 30,
+                        axisLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
                         axisLabel: {
                             rotate: 45,
-                            fontSize: 11
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)'
                         }
                     },
                     yAxis: {
                         type: 'value',
                         name: this.formatUnitName(unit),
+                        nameTextStyle: {
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontSize: 12
+                        },
                         nameRotate: 90,
                         nameLocation: 'middle',
-                        nameGap: 60,
+                        nameGap: 45,
+                        axisLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
                         axisLabel: {
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontSize: 11,
                             formatter: (value) => {
                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                 if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
                                 return value.toLocaleString();
                             }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)',
+                                type: 'dashed'
+                            }
                         }
                     },
                     grid: {
-                        left: '10%',
+                        left: '5%',
                         right: '5%',
-                        top: '15%',
-                        bottom: '15%'
+                        top: '10%',
+                        bottom: '5%',
+                        backgroundColor: 'transparent',
+                        containLabel: true
                     },
                     series: [{
                         name: series.name,
                         type: 'line',
-                        data: data,
+                        data: sortedData,
                         symbol: 'circle',
-                        symbolSize: 6,
-                        lineStyle: {
+                        symbolSize: 7,
+                        lineSyle: {
                             width: 2,
-                            color: color
+                            color: color,
+                            type: 'dashed'
                         },
                         itemStyle: {
                             color: color
+                        },
+                        emphasis: {
+                            disabled: true
+                        },
+                        blur: {
+                            disabled: true
+                        },
+                        select: {
+                            disabled: true
                         },
                         markLine: undefined
                     }]
                 };
 
                 chart.setOption(option, true);
+
+                // Add click event to open commit URL
+                chart.off('click'); // Remove any existing click handlers
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.seriesType === 'line') {
+                        const commitHash = sortedHashes[params.dataIndex];
+                        const repoUrl = this.getRepositoryUrl();
+                        if (repoUrl && commitHash) {
+                            const commitUrl = `${repoUrl}/commit/${commitHash}`;
+                            window.open(commitUrl, '_blank');
+                        }
+                    }
+                });
             }
         }
 
-        // Initialize the visualizer when the page loads
-        document.addEventListener('DOMContentLoaded', () => {
-            const visualizer = new BenchmarkVisualizer();
-            visualizer.init();
-        });
+        // Wait for both DOM and ECharts to be ready
+        function initializeWhenReady() {
+            if (typeof echarts !== 'undefined' && document.readyState === 'complete') {
+                const visualizer = new BenchmarkVisualizer();
+                visualizer.init();
+            } else {
+                setTimeout(initializeWhenReady, 50);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeWhenReady);
+        } else {
+            initializeWhenReady();
+        }
     </script>
 </body>
 </html>
