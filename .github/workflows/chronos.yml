@@ -31,7 +31,7 @@ jobs:
       # was merged to main and previous job was successful.
       - name: Save benchmarks results
         if: ${{ success() && github.ref_name == 'main' }}
-        uses: dkharms/chronos@8b15b482746a306e736ac934a282d8c150d56404
+        uses: dkharms/chronos@main
         with:
           github-token: ${{ github.token }}
           benchmarks-file-path: ${{ runner.temp }}/gotool.txt
@@ -41,7 +41,7 @@ jobs:
       # was merged to main and previous job was successful.
       - name: Publish benchmarks results
         if: ${{ success() && github.ref_name == 'main' }}
-        uses: dkharms/chronos@8b15b482746a306e736ac934a282d8c150d56404
+        uses: dkharms/chronos@main
         with:
           github-token: ${{ github.token }}
           action-to-perform: publish
