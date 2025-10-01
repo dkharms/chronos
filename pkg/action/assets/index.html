@@ -121,6 +121,33 @@
             margin-bottom: 20px;
             padding-bottom: 16px;
             border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tabs-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .screenshot-button {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .screenshot-button:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
         }
         .chart-wrapper {
             width: 100%;
@@ -266,7 +293,12 @@
                 chartDiv.innerHTML = `
                     <h2 class="chart-title">${series.name}</h2>
                     <div class="tab-container">
-                        ${tabsHtml}
+                        <div class="tabs-group">
+                            ${tabsHtml}
+                        </div>
+                        <button class="screenshot-button" data-chart="${series.name}">
+                            📷 Save PNG
+                        </button>
                     </div>
                     <div class="chart-wrapper"></div>
                 `;
@@ -336,6 +368,30 @@
                         this.renderChartForUnit(series, unit, chart, index);
                     });
                 });
+
+                // Add screenshot functionality
+                const screenshotButton = chartDiv.querySelector('.screenshot-button');
+                screenshotButton.addEventListener('click', () => {
+                    this.downloadChartScreenshot(chart, series.name);
+                });
+            }
+
+            downloadChartScreenshot(chart, chartName) {
+                try {
+                    const dataURL = chart.getDataURL({
+                        type: 'png',
+                        pixelRatio: 2,
+                        backgroundColor: '#ffffff'
+                    });
+
+                    const link = document.createElement('a');
+                    link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
+                    link.href = dataURL;
+                    link.click();
+                } catch (error) {
+                    console.error('Failed to download chart screenshot:', error);
+                    alert('Failed to save screenshot. Please try again.');
+                }
             }
 
             renderChartForUnit(series, unit, chart, index) {
