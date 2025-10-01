@@ -8,7 +8,7 @@ import (
 
 type Series struct {
 	Name   string   `json:"name"`
-	Points []Result `json:"points"`
+	Points []Result `json:"measurements"`
 }
 
 type Result struct {
