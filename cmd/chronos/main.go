@@ -17,7 +17,7 @@ func main() {
 	}
 
 	owner, repo := ctx.Repo()
-	newVar := action.Context{
+	gctx := action.Context{
 		Token:      act.GetInput("github-token"),
 		Owner:      owner,
 		Repository: repo,
@@ -31,13 +31,15 @@ func main() {
 	var actErr error
 	switch act.GetInput("action-to-perform") {
 	case "save":
-		actErr = action.Save(newVar)
+		actErr = action.Save(gctx)
+	case "publish":
+		actErr = action.Publish(gctx)
 	default:
 		actErr = errors.New("unknown 'action-to-perform'")
 	}
 
 	if actErr != nil {
-		exit(err)
+		exit(actErr)
 	}
 }
 
