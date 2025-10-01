@@ -17,7 +17,7 @@ const (
 )
 
 var (
-	//go:embed assets/index.ts
+	//go:embed assets/index.html
 	TypescriptFile string
 )
 
@@ -57,7 +57,7 @@ func Publish(gctx Context) error {
 						return nil, "", xerr
 					}
 
-					return []string{ChronosMergedFilename, "index.ts"},
+					return []string{ChronosMergedFilename, "index.html"},
 						fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
 						saveMergedBenchmarks(series)
 				},
@@ -67,7 +67,7 @@ func Publish(gctx Context) error {
 }
 
 func saveIndexFile() error {
-	f, err := os.OpenFile("index.ts", os.O_CREATE|os.O_RDWR, 0o644)
+	f, err := os.OpenFile("index.html", os.O_CREATE|os.O_RDWR, 0o644)
 	if err != nil {
 		return err
 	}

@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Benchmark Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        .filter-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+        .filter-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .filter-input {
+            width: 300px;
+            padding: 8px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .clear-button {
+            margin-left: 10px;
+            padding: 8px 16px;
+            background: #f44336;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .clear-button:hover {
+            background: #d32f2f;
+        }
+        .charts-container {
+            display: grid;
+            gap: 30px;
+        }
+        .chart-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 20px;
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .chart-title {
+            margin: 0 0 20px 0;
+            color: #333;
+            font-size: 20px;
+        }
+        .unit-tab {
+            background: #f5f5f5;
+            border: 1px solid #ddd;
+            padding: 8px 16px;
+            margin-right: 5px;
+            cursor: pointer;
+            border-radius: 4px 4px 0 0;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+        .unit-tab:hover {
+            background: #e9e9e9;
+        }
+        .unit-tab.active {
+            background: #007acc;
+            color: white;
+            border-color: #007acc;
+        }
+        .tab-container {
+            margin-bottom: 20px;
+        }
+        .chart-wrapper {
+            width: 100%;
+            height: 400px;
+        }
+        .no-results {
+            text-align: center;
+            color: #666;
+            font-size: 18px;
+            padding: 40px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+            font-size: 18px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chronos Benchmark Results</h1>
+
+        <div class="filter-section">
+            <label for="benchmarkFilter">Filter by Benchmark Name:</label>
+            <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type to filter benchmarks...">
+            <button id="clearFilter" class="clear-button">Clear</button>
+        </div>
+
+        <div id="chartsContainer" class="charts-container">
+            <div class="loading">Loading benchmark data...</div>
+        </div>
+    </div>
+
+    <script>
+        class BenchmarkVisualizer {
+            constructor() {
+                this.data = [];
+                this.filteredData = [];
+                this.charts = new Map();
+            }
+
+            async init() {
+                await this.loadData();
+                this.setupEventListeners();
+                this.filteredData = [...this.data];
+                this.renderCharts();
+            }
+
+            async loadData() {
+                try {
+                    const response = await fetch('.chronos');
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}`);
+                    }
+                    this.data = await response.json();
+                } catch (error) {
+                    console.error('Failed to load benchmark data:', error);
+                    this.data = [];
+                    document.getElementById('chartsContainer').innerHTML =
+                        '<div class="no-results">Failed to load benchmark data. Make sure .chronos file exists.</div>';
+                }
+            }
+
+            setupEventListeners() {
+                const filterInput = document.getElementById('benchmarkFilter');
+                const clearButton = document.getElementById('clearFilter');
+
+                filterInput.addEventListener('input', (e) => {
+                    this.filterBenchmarks(e.target.value);
+                });
+
+                clearButton.addEventListener('click', () => {
+                    filterInput.value = '';
+                    this.filterBenchmarks('');
+                });
+
+                window.addEventListener('resize', () => {
+                    this.charts.forEach(chart => {
+                        chart.resize();
+                    });
+                });
+            }
+
+            filterBenchmarks(query) {
+                if (!query.trim()) {
+                    this.filteredData = [...this.data];
+                } else {
+                    const lowerQuery = query.toLowerCase();
+                    this.filteredData = this.data.filter(series =>
+                        series.name.toLowerCase().includes(lowerQuery)
+                    );
+                }
+                this.renderCharts();
+            }
+
+            renderCharts() {
+                const container = document.getElementById('chartsContainer');
+                container.innerHTML = '';
+                this.charts.clear();
+
+                if (this.filteredData.length === 0) {
+                    if (this.data.length === 0) {
+                        container.innerHTML = '<div class="no-results">No benchmark data available.</div>';
+                    } else {
+                        container.innerHTML = '<div class="no-results">No benchmarks found matching the filter.</div>';
+                    }
+                    return;
+                }
+
+                this.filteredData.forEach(series => {
+                    this.createBenchmarkChart(series, container);
+                });
+            }
+
+            createBenchmarkChart(series, container) {
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-card';
+
+                const units = this.getUnitsForSeries(series);
+                const tabsHtml = units.map((unit, index) =>
+                    `<button class="unit-tab ${index === 0 ? 'active' : ''}" data-unit="${unit}">
+                        ${this.formatUnitName(unit)}
+                    </button>`
+                ).join('');
+
+                chartDiv.innerHTML = `
+                    <h2 class="chart-title">${series.name}</h2>
+                    <div class="tab-container">
+                        ${tabsHtml}
+                    </div>
+                    <div class="chart-wrapper"></div>
+                `;
+
+                container.appendChild(chartDiv);
+
+                const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                const chart = echarts.init(chartWrapper);
+                this.charts.set(series.name, chart);
+
+                this.setupTabSwitching(chartDiv, series, chart);
+                this.renderChartForUnit(series, units[0], chart);
+            }
+
+            getUnitsForSeries(series) {
+                const units = new Set();
+                series.measurements.forEach(measurement => {
+                    measurement.metrics.forEach(metric => {
+                        units.add(metric.unit);
+                    });
+                });
+                return Array.from(units).sort();
+            }
+
+            formatUnitName(unit) {
+                const unitMap = {
+                    'ns/op': 'Time (ns/op)',
+                    'B/op': 'Memory (B/op)',
+                    'allocs/op': 'Allocations/op',
+                    'MB/s': 'Throughput (MB/s)'
+                };
+                return unitMap[unit] || unit;
+            }
+
+            setupTabSwitching(chartDiv, series, chart) {
+                const tabs = chartDiv.querySelectorAll('.unit-tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const unit = e.target.dataset.unit;
+
+                        tabs.forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+
+                        this.renderChartForUnit(series, unit, chart);
+                    });
+                });
+            }
+
+            renderChartForUnit(series, unit, chart) {
+                const data = [];
+
+                series.measurements.forEach(measurement => {
+                    const metric = measurement.metrics.find(m => m.unit === unit);
+                    if (metric) {
+                        data.push([measurement.commit_hash.substring(0, 8), metric.value]);
+                    }
+                });
+
+                data.sort((a, b) => a[0].localeCompare(b[0]));
+
+                const option = {
+                    title: {
+                        text: `${series.name} - ${this.formatUnitName(unit)}`,
+                        left: 'center',
+                        textStyle: {
+                            fontSize: 16,
+                            fontWeight: 'normal'
+                        }
+                    },
+                    tooltip: {
+                        trigger: 'axis',
+                        formatter: (params) => {
+                            const point = params[0];
+                            return `Commit: ${point.name}<br/>Value: ${point.value[1].toLocaleString()} ${unit}`;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        name: 'Commit Hash',
+                        nameLocation: 'middle',
+                        nameGap: 30,
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        name: this.formatUnitName(unit),
+                        nameRotate: 90,
+                        nameLocation: 'middle',
+                        nameGap: 60,
+                        axisLabel: {
+                            formatter: (value) => {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                                return value.toLocaleString();
+                            }
+                        }
+                    },
+                    grid: {
+                        left: '10%',
+                        right: '5%',
+                        top: '15%',
+                        bottom: '15%'
+                    },
+                    series: [{
+                        name: series.name,
+                        type: 'line',
+                        data: data,
+                        symbol: 'circle',
+                        symbolSize: 6,
+                        lineStyle: {
+                            width: 2,
+                            color: '#007acc'
+                        },
+                        itemStyle: {
+                            color: '#007acc'
+                        },
+                        markLine: data.length > 1 ? {
+                            data: [{
+                                type: 'average',
+                                name: 'Average'
+                            }],
+                            lineStyle: {
+                                color: '#ff6b6b',
+                                type: 'dashed'
+                            }
+                        } : undefined
+                    }]
+                };
+
+                chart.setOption(option, true);
+            }
+        }
+
+        // Initialize the visualizer when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            const visualizer = new BenchmarkVisualizer();
+            visualizer.init().catch(console.error);
+        });
+    </script>
+</body>
+</html>
