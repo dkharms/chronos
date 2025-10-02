@@ -198,23 +198,33 @@
         }
         .stats-info {
             margin-top: 0px;
-            padding: 8px 12px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11px;
+            color: hsl(215.4 16.3% 46.9%);
             background: hsl(210 40% 98%);
             border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 4px;
-            font-size: 11px;
-            color: hsl(215.4 16.3% 46.9%);
-            display: flex;
-            gap: 16px;
-            flex-wrap: wrap;
+            overflow: hidden;
         }
-        .stat-item {
-            display: flex;
-            align-items: center;
-            gap: 4px;
+        .stats-table th,
+        .stats-table td {
+            padding: 6px 12px;
+            text-align: left;
+            border-right: 1px solid hsl(214.3 31.8% 91.4%);
         }
-        .stat-label {
+        .stats-table th:last-child,
+        .stats-table td:last-child {
+            border-right: none;
+        }
+        .stats-table th {
+            background: hsl(210 40% 94%);
             font-weight: 500;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         .chart-wrapper {
 						display: flex;
@@ -775,22 +785,24 @@
                 };
 
                 statsDiv.innerHTML = `
-                    <div class="stat-item">
-                        <span class="stat-label">Min:</span>
-                        <span>${formatValue(min)} ${unit}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Max:</span>
-                        <span>${formatValue(max)} ${unit}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Mean:</span>
-                        <span>${formatValue(mean)} ${unit}</span>
-                    </div>
-                    <div class="stat-item">
-                        <span class="stat-label">Std Dev:</span>
-                        <span>${formatValue(stdDev)} ${unit}</span>
-                    </div>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Min</th>
+                                <th>Max</th>
+                                <th>Mean</th>
+                                <th>Std Dev</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatValue(min)} ${unit}</td>
+                                <td>${formatValue(max)} ${unit}</td>
+                                <td>${formatValue(mean)} ${unit}</td>
+                                <td>${formatValue(stdDev)} ${unit}</td>
+                            </tr>
+                        </tbody>
+                    </table>
                 `;
             }
         }
