@@ -202,17 +202,17 @@
         .stats-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 11px;
-            color: hsl(215.4 16.3% 46.9%);
-            background: hsl(210 40% 98%);
+            font-size: 12px;
+            color: hsl(222.2 84% 4.9%);
+            background: hsl(0 0% 100%);
             border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 4px;
+            border-radius: 6px;
             overflow: hidden;
         }
         .stats-table th,
         .stats-table td {
-            padding: 6px 12px;
-            text-align: left;
+            padding: 8px 12px;
+            text-align: center;
             border-right: 1px solid hsl(214.3 31.8% 91.4%);
         }
         .stats-table th:last-child,
@@ -220,11 +220,14 @@
             border-right: none;
         }
         .stats-table th {
-            background: hsl(210 40% 94%);
+            background: hsl(210 40% 98%);
+            font-weight: 600;
+            font-size: 11px;
+            color: hsl(215.4 16.3% 46.9%);
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        .stats-table td {
             font-weight: 500;
-            font-size: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
         }
         .chart-wrapper {
 						display: flex;
@@ -471,20 +474,118 @@
 
             downloadChartScreenshot(chart, chartName) {
                 try {
-                    const dataURL = chart.getDataURL({
+                    // Get chart image
+                    const chartDataURL = chart.getDataURL({
                         type: 'png',
                         pixelRatio: 2,
                         backgroundColor: '#ffffff'
                     });
 
-                    const link = document.createElement('a');
-                    link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
-                    link.href = dataURL;
-                    link.click();
+                    // Get stats table element
+                    const statsTable = document.getElementById(`stats-${chartName}`).querySelector('.stats-table');
+
+                    // Create canvas to combine chart and table
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    // Load chart image
+                    const chartImg = new Image();
+                    chartImg.onload = () => {
+                        // Set canvas dimensions
+                        const tableHeight = 80; // Approximate table height
+                        const spacing = 10; // Space between chart and table
+                        canvas.width = chartImg.width;
+                        canvas.height = chartImg.height + tableHeight + spacing;
+
+                        // Fill background
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        // Draw chart
+                        ctx.drawImage(chartImg, 0, 0);
+
+                        // Draw table as HTML to canvas
+                        this.drawTableToCanvas(ctx, statsTable, 0, chartImg.height + spacing, canvas.width, tableHeight)
+                            .then(() => {
+                                // Download combined image
+                                const link = document.createElement('a');
+                                link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                            });
+                    };
+                    chartImg.src = chartDataURL;
+
                 } catch (error) {
                     console.error('Failed to download chart screenshot:', error);
                     alert('Failed to save screenshot. Please try again.');
                 }
+            }
+
+            async drawTableToCanvas(ctx, table, x, y, width, height) {
+                return new Promise((resolve) => {
+                    // Create a temporary div to hold the table for measurement
+                    const tempDiv = document.createElement('div');
+                    tempDiv.style.position = 'absolute';
+                    tempDiv.style.left = '-9999px';
+                    tempDiv.style.width = width + 'px';
+                    tempDiv.appendChild(table.cloneNode(true));
+                    document.body.appendChild(tempDiv);
+
+                    // Get table data
+                    const rows = table.querySelectorAll('tr');
+                    const cellData = [];
+
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('th, td');
+                        const rowData = Array.from(cells).map(cell => ({
+                            text: cell.textContent.trim(),
+                            isHeader: cell.tagName === 'TH'
+                        }));
+                        cellData.push(rowData);
+                    });
+
+                    document.body.removeChild(tempDiv);
+
+                    // Draw table manually
+                    const cellWidth = width / cellData[0].length;
+                    const cellHeight = height / cellData.length;
+
+                    // Draw table border
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, width, height);
+
+                    // Draw cells
+                    cellData.forEach((row, rowIndex) => {
+                        row.forEach((cell, colIndex) => {
+                            const cellX = x + colIndex * cellWidth;
+                            const cellY = y + rowIndex * cellHeight;
+
+                            // Fill header background
+                            if (cell.isHeader) {
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.fillRect(cellX, cellY, cellWidth, cellHeight);
+                            }
+
+                            // Draw cell borders
+                            ctx.strokeStyle = '#e2e8f0';
+                            ctx.strokeRect(cellX, cellY, cellWidth, cellHeight);
+
+                            // Draw text
+                            ctx.fillStyle = cell.isHeader ? '#64748b' : '#0f172a';
+                            ctx.font = cell.isHeader ? '600 11px sans-serif' : '500 12px sans-serif';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+
+                            const textX = cellX + cellWidth / 2;
+                            const textY = cellY + cellHeight / 2;
+                            ctx.fillText(cell.text, textX, textY);
+                        });
+                    });
+
+                    resolve();
+                });
             }
 
             toggleComparisonMode(chartName, button) {
