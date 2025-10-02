@@ -26,7 +26,7 @@ func (m Metric) UnitClass() benchunit.Class {
 	return benchunit.ClassOf(m.Unit)
 }
 
-func Merge(collected []Series, incoming []Series) []Series {
+func Merge(collected, incoming []Series) []Series {
 	var merged []Series
 
 	for _, s := range incoming {

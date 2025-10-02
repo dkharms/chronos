@@ -18,6 +18,10 @@ build-binaries:
 imports:
 	goimports -w -local 'github.com/dkharms/chronos' .
 
+.PHONY: lint
+lint:
+	golangci-lint run --config .golangci.yml
+
 .PHONY: test
 test:
 	go test -count=1 -v ./...

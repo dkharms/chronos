@@ -21,8 +21,7 @@ func (p *goparser) Parse() (results []benchmark.Result) {
 	br := benchfmt.NewReader(p.r, "benchmarks")
 
 	for br.Scan() {
-		switch v := br.Result().(type) {
-		case *benchfmt.Result:
+		if v, ok := br.Result().(*benchfmt.Result); ok {
 			results = append(results, convert(*v.Clone()))
 		}
 	}

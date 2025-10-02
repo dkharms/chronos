@@ -1,0 +1,94 @@
+version: "2"
+run:
+  issues-exit-code: 1
+  tests: true
+output:
+  formats:
+    text:
+      path: stdout
+      print-linter-name: true
+      print-issued-lines: true
+linters:
+  default: none
+  enable:
+    - errcheck
+    - goconst
+    - gocritic
+    - govet
+    - ineffassign
+    - revive
+    - unused
+  settings:
+    revive:
+      rules:
+        - name: var-naming
+          disabled: true
+    gocritic:
+      disabled-checks:
+        - unnamedResult
+        - hugeParam
+        - exitAfterDefer
+        - ifElseChain
+      enabled-tags:
+        - diagnostic
+        - experimental
+        - opinionated
+        - performance
+        - style
+    unused:
+      field-writes-are-uses: false
+      post-statements-are-reads: false
+      exported-fields-are-used: false
+      parameters-are-used: true
+      local-variables-are-used: false
+      generated-is-used: false
+  exclusions:
+    generated: lax
+    rules:
+      - path: (.+)\.go$
+        text: G104
+      - path: (.+)\.go$
+        text: exported func .* returns unexported type .*, which can be annoying to use
+      - path: (.+)\.go$
+        text: don't use an underscore in package name
+      - path: (.+)\.go$
+        text: Error return value of .((os\.)?std(out|err)\..*|.*Close|.*Flush|os\.Remove(All)?|.*print(f|ln)?|os\.(Un)?Setenv). is not checked
+      - path: (.+)\.go$
+        text: should check returned error before deferring
+      - path: (.+)\.go$
+        text: should have a package comment
+      - path: (.+)\.go$
+        text: declaration of "err" shadows declaration at line
+      - path: (.+)\.go$
+        text: should have a package comment, unless it's in another file for this package
+      - path: (.+)\.go$
+        text: exported .+ should have comment.* or be unexported
+      - path: (.+)\.go$
+        text: comment on exported const .+ should be of the form
+    paths:
+      - \.pb\.go$
+      - bin
+      - vendor
+      - var
+      - tmp
+      - third_party$
+      - builtin$
+      - examples$
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - \.pb\.go$
+      - bin
+      - vendor
+      - var
+      - tmp
+      - third_party$
+      - builtin$
+      - examples$

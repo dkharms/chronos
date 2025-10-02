@@ -17,7 +17,7 @@ func WithTransient(
 	token, owner, repositoryName string,
 	fn func(context.Context, Repository) error,
 ) error {
-	tmp, err := os.MkdirTemp("", "")
+	tmp, err := os.MkdirTemp(os.TempDir(), "chronos-*")
 	if err != nil {
 		return err
 	}
@@ -28,7 +28,7 @@ func WithTransient(
 	if err != nil {
 		return err
 	}
-	defer os.RemoveAll(tmp)
+	defer func() { _ = os.RemoveAll(tmp) }()
 
 	worktree, err := repository.Worktree()
 	if err != nil {
@@ -39,7 +39,7 @@ func WithTransient(
 	if err != nil {
 		return err
 	}
-	defer os.Chdir(dir)
+	defer func() { _ = os.Chdir(dir) }()
 
 	if err := os.Chdir(tmp); err != nil {
 		return err
@@ -64,7 +64,7 @@ func (r Repository) WithBranch(
 	if err != nil {
 		return err
 	}
-	defer Checkout(r.w, cur.String())
+	defer func() { _ = Checkout(r.w, cur.String()) }()
 
 	if err := Fetch(ctx, r.r, branch); err != nil {
 		return err
