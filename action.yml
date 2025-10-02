@@ -1,8 +1,7 @@
-name: chronos
+name: chronosbnch
 author: dkharms
 description: |
-  chronos provides functionality for storing benchmark results,
-  emitting comparisons of benchmark measurements across git commits
+  chronos provides functionality for storing benchmark results
   and visualizing results on your personal GitHub Pages deployment
 
 inputs:
