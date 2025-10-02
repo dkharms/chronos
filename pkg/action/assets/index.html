@@ -128,13 +128,19 @@
             border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
             flex-wrap: wrap;
         }
         .tabs-group {
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+        }
+        .buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
         }
         .screenshot-button {
             background: hsl(0 0% 100%);
@@ -167,7 +173,6 @@
             display: flex;
             align-items: center;
             gap: 4px;
-            margin-left: 8px;
         }
         .compare-button:hover {
             background: hsl(210 40% 98%);
@@ -336,12 +341,14 @@
                         <div class="tabs-group">
                             ${tabsHtml}
                         </div>
-                        <button class="screenshot-button" data-chart="${series.name}">
-                            📷 Save PNG
-                        </button>
-                        <button class="compare-button" data-chart="${series.name}">
-                            📊 Compare
-                        </button>
+                        <div class="buttons-group">
+                            <button class="screenshot-button" data-chart="${series.name}">
+                                📷 Save PNG
+                            </button>
+                            <button class="compare-button" data-chart="${series.name}">
+                                📊 Compare
+                            </button>
+                        </div>
                     </div>
                     <div class="comparison-info" id="comparison-${series.name}"></div>
                     <div class="chart-wrapper"></div>
