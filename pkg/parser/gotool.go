@@ -2,7 +2,6 @@ package parser
 
 import (
 	"cmp"
-	_ "embed"
 	"io"
 
 	"golang.org/x/perf/benchfmt"
