@@ -38,9 +38,7 @@ func Diff(previous, current []Series) []CalculatedDiff {
 		var md []MetricDiff
 		if idx == -1 {
 			md = metricDiff(
-				// NOTE(dkharms): There is slice operation in summary.tpl (basically `commit[0:6]`).
-				// So I manually padded commit hash with six symbols.
-				Measurement{CommitHash: "------"},
+				Measurement{},
 				s.Measurements[len(s.Measurements)-1],
 			)
 		} else {
@@ -61,7 +59,7 @@ func Diff(previous, current []Series) []CalculatedDiff {
 
 func metricDiff(previous, current Measurement) []MetricDiff {
 	var (
-		prevCommit = "-"
+		prevCommit = "------"
 		prevValue  = math.NaN()
 		diff       []MetricDiff
 	)
