@@ -413,11 +413,9 @@
                     }
                 });
 
-                // Sort both arrays together
-                const combined = data.map((item, idx) => ({ data: item, hash: commitHashes[idx] }));
-                combined.sort((a, b) => a.data[0].localeCompare(b.data[0]));
-                const sortedData = combined.map(item => item.data);
-                const sortedHashes = combined.map(item => item.hash);
+                // Keep original order - no sorting needed
+                const sortedData = data;
+                const sortedHashes = commitHashes;
 
                 const color = this.colors[index % this.colors.length];
                 const option = {
