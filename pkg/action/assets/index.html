@@ -26,60 +26,68 @@
             letter-spacing: -0.025em;
         }
         .filter-section {
-						display: flex;
-						flex-direction: column;
-						gap: 8px;
-
-            background: hsl(0 0% 100%);
-            padding: 24px;
-            border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 8px;
-            margin-bottom: 24px;
-            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 8px 0;
         }
-				.filter-section > div {
-					display: flex;
-					gap: 8px;
-					flex-wrap: wrap;
-				}
-        .filter-section label {
-            display: block;
+        .filter-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 280px;
+            max-width: 400px;
+        }
+        .filter-icon {
+            position: absolute;
+            left: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .filter-label {
             font-weight: 500;
             font-size: 14px;
             color: hsl(222.2 84% 4.9%);
+            white-space: nowrap;
         }
         .filter-input {
-						flex-grow: 1;
-            max-width: 300px;
-						width: 100%;
-						height: 18px;
-            padding: 8px 12px;
+            width: 100%;
+            padding: 8px 40px 8px 40px;
             border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 6px;
-            background: hsl(0 0% 100%);
             font-size: 14px;
+            background: hsl(0 0% 100%);
             color: hsl(222.2 84% 4.9%);
-            transition: border-color 0.2s ease;
+            transition: all 0.2s ease;
         }
         .filter-input:focus {
             outline: none;
             border-color: hsl(221.2 83.2% 53.3%);
-            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.2);
+            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.1);
+        }
+        .filter-input:not(:placeholder-shown) + .clear-button {
+            opacity: 1;
+            pointer-events: auto;
         }
         .clear-button {
-            padding: 8px 16px;
-            background: hsl(0 0% 100%);
-            color: hsl(222.2 84% 4.9%);
-            border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 6px;
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: hsl(215.4 16.3% 46.9%);
             cursor: pointer;
-            font-size: 14px;
-            font-weight: 500;
+            font-size: 16px;
+            padding: 4px;
+            opacity: 0;
+            pointer-events: none;
             transition: all 0.2s ease;
+            border-radius: 4px;
         }
         .clear-button:hover {
-            background: hsl(210 40% 98%);
-            border-color: hsl(217.2 32.6% 17.5%);
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
         }
         .charts-container {
             display: grid;
@@ -255,11 +263,12 @@
 <body>
     <div>
         <div class="filter-section">
-            <label for="benchmarkFilter">Filter by Benchmark Name:</label>
-						<div>
-							<input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type to filter benchmarks...">
-							<button id="clearFilter" class="clear-button">Clear</button>
-						</div>
+            <span class="filter-label">Filter benchmarks:</span>
+            <div class="filter-wrapper">
+                <span class="filter-icon">🔍</span>
+                <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type here...">
+                <button id="clearFilter" class="clear-button">✕</button>
+            </div>
         </div>
 
         <div id="chartsContainer" class="charts-container">
