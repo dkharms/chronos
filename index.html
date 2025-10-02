@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chronos Benchmark Results</title>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 24px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .container {
+            max-width: 85%;
+            margin: 0 auto;
+        }
+        h1 {
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 30px;
+            letter-spacing: -0.025em;
+        }
+        .filter-section {
+            background: hsl(0 0% 100%);
+            padding: 24px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .filter-section label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
+        }
+        .filter-input {
+            width: 300px;
+            padding: 8px 12px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            background: hsl(0 0% 100%);
+            font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
+            transition: border-color 0.2s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: hsl(221.2 83.2% 53.3%);
+            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.2);
+        }
+        .clear-button {
+            margin-left: 8px;
+            padding: 8px 16px;
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+        .clear-button:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            gap: 24px;
+        }
+        .chart-card {
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            padding: 24px;
+            background: hsl(0 0% 100%);
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .chart-title {
+            margin: 0 0 20px 0;
+            color: hsl(222.2 84% 4.9%);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            padding-bottom: 12px;
+        }
+        .unit-tab {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            display: inline-block;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+        }
+        .unit-tab:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .unit-tab.active {
+            background: hsl(222.2 47.4% 11.2%);
+            color: hsl(210 40% 98%);
+            border-color: hsl(222.2 47.4% 11.2%);
+        }
+        .tab-container {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .tabs-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .screenshot-button {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .screenshot-button:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .chart-wrapper {
+            width: 100%;
+            height: 350px;
+        }
+        .no-results {
+            text-align: center;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 14px;
+            padding: 48px;
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 48px;
+            font-size: 14px;
+            color: hsl(215.4 16.3% 46.9%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chronos Benchmark Results</h1>
+
+        <div class="filter-section">
+            <label for="benchmarkFilter">Filter by Benchmark Name:</label>
+            <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type to filter benchmarks...">
+            <button id="clearFilter" class="clear-button">Clear</button>
+        </div>
+
+        <div id="chartsContainer" class="charts-container">
+            <div class="loading">Loading benchmark data...</div>
+        </div>
+    </div>
+
+    <script>
+        
+        
+        window.BENCHMARK_DATA = [{"name":"BubbleSort/length=128-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":61236},{"unit":"ns/op","value":19448},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=256-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":22846},{"unit":"ns/op","value":52535},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=512-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":6894},{"unit":"ns/op","value":168226},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=1024-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":1929},{"unit":"ns/op","value":619180},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=2048-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":508},{"unit":"ns/op","value":2364936},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=4096-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":130},{"unit":"ns/op","value":9155391},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=8192-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":34},{"unit":"ns/op","value":36447866},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=16384-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":7},{"unit":"ns/op","value":145847597},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]}];
+
+        class BenchmarkVisualizer {
+            constructor() {
+                this.data = [];
+                this.filteredData = [];
+                this.charts = new Map();
+                this.colors = [
+                    'hsl(221.2 83.2% 53.3%)', 
+                    'hsl(142.1 76.2% 36.3%)', 
+                    'hsl(346.8 77.2% 49.8%)', 
+                    'hsl(258.3 89.5% 66.3%)', 
+                    'hsl(24.6 95% 53.1%)', 
+                    'hsl(262.1 83.3% 57.8%)', 
+                    'hsl(173.4 58.9% 39.1%)', 
+                    'hsl(43.3 96.4% 56.3%)', 
+                    'hsl(197.4 71.4% 73.3%)', 
+                    'hsl(20.5 90.2% 48.2%)' 
+                ];
+            }
+
+            init() {
+                this.loadData();
+                this.setupEventListeners();
+                this.filteredData = [...this.data];
+                this.renderCharts();
+            }
+
+            loadData() {
+                try {
+                    this.data = window.BENCHMARK_DATA || [];
+                } catch (error) {
+                    console.error('Failed to load benchmark data:', error);
+                    this.data = [];
+                    document.getElementById('chartsContainer').innerHTML =
+                        '<div class="no-results">Failed to load benchmark data.</div>';
+                }
+            }
+
+            setupEventListeners() {
+                const filterInput = document.getElementById('benchmarkFilter');
+                const clearButton = document.getElementById('clearFilter');
+
+                filterInput.addEventListener('input', (e) => {
+                    this.filterBenchmarks(e.target.value);
+                });
+
+                clearButton.addEventListener('click', () => {
+                    filterInput.value = '';
+                    this.filterBenchmarks('');
+                });
+
+                window.addEventListener('resize', () => {
+                    this.charts.forEach(chart => {
+                        chart.resize();
+                    });
+                });
+            }
+
+            filterBenchmarks(query) {
+                if (!query.trim()) {
+                    this.filteredData = [...this.data];
+                } else {
+                    const lowerQuery = query.toLowerCase();
+                    this.filteredData = this.data.filter(series =>
+                        series.name.toLowerCase().includes(lowerQuery)
+                    );
+                }
+                this.renderCharts();
+            }
+
+            renderCharts() {
+                const container = document.getElementById('chartsContainer');
+                container.innerHTML = '';
+                this.charts.clear();
+
+                if (this.filteredData.length === 0) {
+                    if (this.data.length === 0) {
+                        container.innerHTML = '<div class="no-results">No benchmark data available.</div>';
+                    } else {
+                        container.innerHTML = '<div class="no-results">No benchmarks found matching the filter.</div>';
+                    }
+                    return;
+                }
+
+                this.filteredData.forEach((series, index) => {
+                    this.createBenchmarkChart(series, container, index);
+                });
+            }
+
+            createBenchmarkChart(series, container, index) {
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-card';
+
+                const units = this.getUnitsForSeries(series);
+                const tabsHtml = units.map((unit, tabIndex) =>
+                    `<button class="unit-tab ${tabIndex === 0 ? 'active' : ''}" data-unit="${unit}">
+                        ${this.formatUnitName(unit)}
+                    </button>`
+                ).join('');
+
+                chartDiv.innerHTML = `
+                    <h2 class="chart-title">${series.name}</h2>
+                    <div class="tab-container">
+                        <div class="tabs-group">
+                            ${tabsHtml}
+                        </div>
+                        <button class="screenshot-button" data-chart="${series.name}">
+                            📷 Save PNG
+                        </button>
+                    </div>
+                    <div class="chart-wrapper"></div>
+                `;
+
+                container.appendChild(chartDiv);
+
+                
+                setTimeout(() => {
+                    const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                    const chart = echarts.init(chartWrapper);
+                    this.charts.set(series.name, chart);
+
+                    this.setupTabSwitching(chartDiv, series, chart, index);
+                    this.renderChartForUnit(series, units[0], chart, index);
+                }, 10);
+            }
+
+            getUnitsForSeries(series) {
+                const units = new Set();
+                series.measurements.forEach(measurement => {
+                    measurement.metrics.forEach(metric => {
+                        units.add(metric.unit);
+                    });
+                });
+                return Array.from(units).sort();
+            }
+
+            formatUnitName(unit) {
+                return unit;
+            }
+
+            getRepositoryUrl() {
+                
+                
+                const hostname = window.location.hostname;
+                if (hostname.endsWith('.github.io')) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 3) {
+                        const username = parts[0];
+                        const repoName = window.location.pathname.split('/')[1] || parts[1];
+                        return `https://github.com/${username}/${repoName}`;
+                    }
+                }
+
+                
+                if (window.location.href.includes('github.com')) {
+                    const match = window.location.href.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                    if (match) {
+                        return `https://github.com/${match[1]}`;
+                    }
+                }
+
+                
+                
+                return 'https://github.com/dkharms/chronos'; 
+            }
+
+            setupTabSwitching(chartDiv, series, chart, index) {
+                const tabs = chartDiv.querySelectorAll('.unit-tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        const unit = e.target.dataset.unit;
+
+                        tabs.forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+
+                        this.renderChartForUnit(series, unit, chart, index);
+                    });
+                });
+
+                
+                const screenshotButton = chartDiv.querySelector('.screenshot-button');
+                screenshotButton.addEventListener('click', () => {
+                    this.downloadChartScreenshot(chart, series.name);
+                });
+            }
+
+            downloadChartScreenshot(chart, chartName) {
+                try {
+                    const dataURL = chart.getDataURL({
+                        type: 'png',
+                        pixelRatio: 2,
+                        backgroundColor: '#ffffff'
+                    });
+
+                    const link = document.createElement('a');
+                    link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
+                    link.href = dataURL;
+                    link.click();
+                } catch (error) {
+                    console.error('Failed to download chart screenshot:', error);
+                    alert('Failed to save screenshot. Please try again.');
+                }
+            }
+
+            renderChartForUnit(series, unit, chart, index) {
+                const data = [];
+                const commitHashes = [];
+
+                series.measurements.forEach(measurement => {
+                    const metric = measurement.metrics.find(m => m.unit === unit);
+                    if (metric) {
+                        data.push([measurement.commit_hash.substring(0, 8), metric.value]);
+                        commitHashes.push(measurement.commit_hash);
+                    }
+                });
+
+                
+                const combined = data.map((item, idx) => ({ data: item, hash: commitHashes[idx] }));
+                combined.sort((a, b) => a.data[0].localeCompare(b.data[0]));
+                const sortedData = combined.map(item => item.data);
+                const sortedHashes = combined.map(item => item.hash);
+
+                const color = this.colors[index % this.colors.length];
+                const option = {
+                    animation: true,
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12
+                        },
+                        formatter: (params) => {
+                            return `Commit: ${params.name}<br/>Value: ${params.value[1].toLocaleString()} ${unit}`;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        axisLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)'
+                        }
+                    },
+                    yAxis: {
+                        type: 'value',
+                        axisLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)'
+                            }
+                        },
+                        axisLabel: {
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontSize: 11,
+                            formatter: (value) => {
+                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                                if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                                return value.toLocaleString();
+                            }
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'hsl(214.3 31.8% 91.4%)',
+                                type: 'dashed'
+                            }
+                        }
+                    },
+                    grid: {
+                        left: '5%',
+                        right: '5%',
+                        top: '10%',
+                        bottom: '5%',
+                        backgroundColor: 'transparent',
+                        containLabel: true
+                    },
+                    series: [{
+                        name: series.name,
+                        type: 'line',
+                        data: sortedData,
+                        symbol: 'circle',
+                        symbolSize: 7,
+                        lineSyle: {
+                            width: 2,
+                            color: color,
+                            type: 'dashed'
+                        },
+                        itemStyle: {
+                            color: color
+                        },
+                        emphasis: {
+                            disabled: true
+                        },
+                        blur: {
+                            disabled: true
+                        },
+                        select: {
+                            disabled: true
+                        },
+                        markLine: undefined
+                    }]
+                };
+
+                chart.setOption(option, true);
+
+                
+                chart.off('click'); 
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.seriesType === 'line') {
+                        const commitHash = sortedHashes[params.dataIndex];
+                        const repoUrl = this.getRepositoryUrl();
+                        if (repoUrl && commitHash) {
+                            const commitUrl = `${repoUrl}/commit/${commitHash}`;
+                            window.open(commitUrl, '_blank');
+                        }
+                    }
+                });
+            }
+        }
+
+        
+        function initializeWhenReady() {
+            if (typeof echarts !== 'undefined' && document.readyState === 'complete') {
+                const visualizer = new BenchmarkVisualizer();
+                visualizer.init();
+            } else {
+                setTimeout(initializeWhenReady, 50);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeWhenReady);
+        } else {
+            initializeWhenReady();
+        }
+    </script>
+</body>
+</html>
