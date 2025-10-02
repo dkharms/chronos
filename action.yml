@@ -1,8 +1,7 @@
 name: chronosbnch
 author: dkharms
 description: |
-  chronos provides functionality for storing benchmark results
-  and visualizing results on your personal GitHub Pages deployment
+  chronos provides functionality for Continuous Benchmarks
 
 inputs:
   github-token:
