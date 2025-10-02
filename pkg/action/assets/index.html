@@ -765,6 +765,8 @@
                 const min = Math.min(...values);
                 const max = Math.max(...values);
                 const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
 
                 const formatValue = (value) => {
                     if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
@@ -784,6 +786,10 @@
                     <div class="stat-item">
                         <span class="stat-label">Mean:</span>
                         <span>${formatValue(mean)} ${unit}</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">Std Dev:</span>
+                        <span>${formatValue(stdDev)} ${unit}</span>
                     </div>
                 `;
             }
