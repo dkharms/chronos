@@ -40,10 +40,12 @@ runs:
 
   - name: Build binary
     shell: bash
+    working-directory: ${{ github.action_path }}
     run: go build -o chronos cmd/chronos/main.go
 
   - name: Run binary
     shell: bash
+    working-directory: ${{ github.action_path }}
     run: ./chronos
     env:
       INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
