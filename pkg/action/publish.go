@@ -39,9 +39,9 @@ func Publish(gctx Context) error {
 			err := r.WithBranch(
 				ctx, gctx.BranchStorage,
 				func() ([]string, string, error) {
-					xseries, err := loadBenchmarksSeries(ChronosMergedFilename)
-					if err != nil {
-						return nil, "", err
+					xseries, xerr := loadBenchmarksSeries(ChronosMergedFilename)
+					if xerr != nil {
+						return nil, "", xerr
 					}
 					series = xseries
 					return nil, "", nil
@@ -58,7 +58,6 @@ func Publish(gctx Context) error {
 					if xerr := saveIndexFile(series); xerr != nil {
 						return nil, "", xerr
 					}
-
 					return []string{"index.html"},
 						fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
 						saveMergedBenchmarks(series)

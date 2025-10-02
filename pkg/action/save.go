@@ -91,8 +91,8 @@ func parseBenchmarkSeries(commitHash, path string) ([]benchmark.Series, error) {
 	for _, r := range raw {
 		r.CommitHash = commitHash
 		series = append(series, benchmark.Series{
-			Name:   r.Name,
-			Points: []benchmark.Result{r},
+			Name:         r.Name,
+			Measurements: []benchmark.Measurement{r},
 		})
 	}
 

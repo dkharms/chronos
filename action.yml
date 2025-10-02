@@ -13,7 +13,6 @@ inputs:
   benchmarks-file-path:
     description: |
       Path to benchmark results of your current workflow run
-    required: true
   branch-storage:
     description: |
       This git branch will be used as a storage for benchmarks
@@ -26,9 +25,10 @@ inputs:
     default: gh-pages
   action-to-perform:
     description: |
-      You can perform `store` and/or `summarize` action.
-      - `store` action stores benchmark results in `branch-storage` git branch
-      - `summarize` action compares measurements from current run with previous one and adds job summary
+      You can perform `save`, `summarize` or `publish` action:
+      - `save` action stores benchmark results in `branch-storage` git branch;
+      - `summarize` action compares measurements from current run with previous one and adds job summary;
+      - `publish` action fetches recent benchmark results from `branch-storage` git branch and publishes them to GitHub pages;
     required: true
 
 runs:

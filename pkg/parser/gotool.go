@@ -18,7 +18,7 @@ func NewGoParser(r io.Reader) *goparser {
 	return &goparser{r: r}
 }
 
-func (p *goparser) Parse() (results []benchmark.Result) {
+func (p *goparser) Parse() (results []benchmark.Measurement) {
 	br := benchfmt.NewReader(p.r, "benchmarks")
 
 	for br.Scan() {
@@ -30,8 +30,8 @@ func (p *goparser) Parse() (results []benchmark.Result) {
 	return
 }
 
-func convert(b benchfmt.Result) benchmark.Result {
-	r := benchmark.Result{
+func convert(b benchfmt.Result) benchmark.Measurement {
+	r := benchmark.Measurement{
 		Name: b.Name.String(),
 		Metrics: []benchmark.Metric{{
 			Unit:  "iterations",

@@ -34,6 +34,8 @@ func main() {
 		actErr = action.Save(gctx)
 	case "publish":
 		actErr = action.Publish(gctx)
+	case "summarize":
+		actErr = action.Summarize(gctx)
 	default:
 		actErr = errors.New("unknown 'action-to-perform'")
 	}
