@@ -110,7 +110,7 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 			return v.Unit == cm.Unit
 		})
 
-		if idx > 0 {
+		if idx >= 0 {
 			prevCommit = previous.CommitHash
 			prevValue = previous.Metrics[idx].Value
 		}

@@ -452,6 +452,8 @@
                         }
                     },
                     yAxis: {
+                        type: 'value',
+                        scale: true,
                         axisLine: {
                             lineStyle: {
                                 color: 'hsl(214.3 31.8% 91.4%)'
@@ -468,7 +470,7 @@
                             formatter: (value) => {
                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                 if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
-																return value
+								return value.toLocaleString();
                             }
                         },
                         splitLine: {
@@ -477,13 +479,13 @@
                                 type: 'dashed'
                             }
                         },
-												name: unit,
-												nameLocation: 'middle',
-												nameTextStyle: {
-													color: 'hsl(215.4 16.3% 46.9%)',
-												},
-												nameGap: 40,
-										},
+						name: unit,
+						nameLocation: 'middle',
+						nameTextStyle: {
+							color: 'hsl(215.4 16.3% 46.9%)',
+						},
+						nameGap: 40,
+					},
                     series: [{
                         name: series.name,
                         type: 'line',
