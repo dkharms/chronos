@@ -8,16 +8,12 @@
     <style>
         body {
             margin: 0;
-            padding: 24px;
+            padding: 24px max(24px, 5%);
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
             background-color: hsl(0 0% 100%);
             color: hsl(222.2 84% 4.9%);
             font-size: 14px;
             line-height: 1.5;
-        }
-        .container {
-            max-width: 85%;
-            margin: 0 auto;
         }
         h1 {
             color: hsl(222.2 84% 4.9%);
@@ -28,6 +24,10 @@
             letter-spacing: -0.025em;
         }
         .filter-section {
+						display: flex;
+						flex-direction: column;
+						gap: 8px;
+
             background: hsl(0 0% 100%);
             padding: 24px;
             border: 1px solid hsl(214.3 31.8% 91.4%);
@@ -35,15 +35,22 @@
             margin-bottom: 24px;
             box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
         }
+				.filter-section > div {
+					display: flex;
+					gap: 8px;
+					flex-wrap: wrap;
+				}
         .filter-section label {
             display: block;
-            margin-bottom: 8px;
             font-weight: 500;
             font-size: 14px;
             color: hsl(222.2 84% 4.9%);
         }
         .filter-input {
-            width: 300px;
+						flex-grow: 1;
+            max-width: 300px;
+						width: 100%;
+						height: 18px;
             padding: 8px 12px;
             border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 6px;
@@ -58,7 +65,6 @@
             box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.2);
         }
         .clear-button {
-            margin-left: 8px;
             padding: 8px 16px;
             background: hsl(0 0% 100%);
             color: hsl(222.2 84% 4.9%);
@@ -75,7 +81,7 @@
         }
         .charts-container {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(550px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 550px), 1fr));
             gap: 24px;
         }
         .chart-card {
@@ -150,7 +156,8 @@
             border-color: hsl(217.2 32.6% 17.5%);
         }
         .chart-wrapper {
-            width: 100%;
+						display: flex;
+						width: 100%;
             height: 350px;
         }
         .no-results {
@@ -172,13 +179,15 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div>
         <h1>Chronos Benchmark Results</h1>
 
         <div class="filter-section">
             <label for="benchmarkFilter">Filter by Benchmark Name:</label>
-            <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type to filter benchmarks...">
-            <button id="clearFilter" class="clear-button">Clear</button>
+						<div>
+							<input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type to filter benchmarks...">
+							<button id="clearFilter" class="clear-button">Clear</button>
+						</div>
         </div>
 
         <div id="chartsContainer" class="charts-container">
@@ -187,9 +196,9 @@
     </div>
 
     <script>
+
         
-        
-        window.BENCHMARK_DATA = [{"name":"BubbleSort/length=128-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":61236},{"unit":"ns/op","value":19448},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":54714},{"unit":"ns/op","value":19852},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=256-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":22846},{"unit":"ns/op","value":52535},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":23151},{"unit":"ns/op","value":52140},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=512-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":6894},{"unit":"ns/op","value":168226},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":7087},{"unit":"ns/op","value":169339},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=1024-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":1929},{"unit":"ns/op","value":619180},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":1934},{"unit":"ns/op","value":617533},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=2048-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":508},{"unit":"ns/op","value":2364936},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":499},{"unit":"ns/op","value":2364591},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=4096-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":130},{"unit":"ns/op","value":9155391},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":129},{"unit":"ns/op","value":9218691},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=8192-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":34},{"unit":"ns/op","value":36447866},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":33},{"unit":"ns/op","value":36454446},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=16384-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":7},{"unit":"ns/op","value":145847597},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":8},{"unit":"ns/op","value":147909636},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]}];
+        window.BENCHMARK_DATA = [{"name":"BubbleSort/length=128-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":61236},{"unit":"ns/op","value":19448},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":54714},{"unit":"ns/op","value":19852},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":50016},{"unit":"ns/op","value":23003},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=256-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":22846},{"unit":"ns/op","value":52535},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":23151},{"unit":"ns/op","value":52140},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":18460},{"unit":"ns/op","value":65092},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=512-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":6894},{"unit":"ns/op","value":168226},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":7087},{"unit":"ns/op","value":169339},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":6002},{"unit":"ns/op","value":200555},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=1024-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":1929},{"unit":"ns/op","value":619180},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":1934},{"unit":"ns/op","value":617533},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":1767},{"unit":"ns/op","value":683772},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=2048-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":508},{"unit":"ns/op","value":2364936},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":499},{"unit":"ns/op","value":2364591},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":478},{"unit":"ns/op","value":2498264},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=4096-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":130},{"unit":"ns/op","value":9155391},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":129},{"unit":"ns/op","value":9218691},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":124},{"unit":"ns/op","value":9575946},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=8192-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":34},{"unit":"ns/op","value":36447866},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":33},{"unit":"ns/op","value":36454446},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":30},{"unit":"ns/op","value":39383757},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]},{"name":"BubbleSort/length=16384-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","value":7},{"unit":"ns/op","value":145847597},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","value":8},{"unit":"ns/op","value":147909636},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","value":4},{"unit":"ns/op","value":258705832},{"unit":"B/op","value":0},{"unit":"allocs/op","value":0}]}]}];
 
         class BenchmarkVisualizer {
             constructor() {
@@ -447,7 +456,6 @@
                         }
                     },
                     yAxis: {
-                        type: 'value',
                         axisLine: {
                             lineStyle: {
                                 color: 'hsl(214.3 31.8% 91.4%)'
@@ -464,7 +472,7 @@
                             formatter: (value) => {
                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                 if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
-                                return value.toLocaleString();
+																return value
                             }
                         },
                         splitLine: {
@@ -472,16 +480,14 @@
                                 color: 'hsl(214.3 31.8% 91.4%)',
                                 type: 'dashed'
                             }
-                        }
-                    },
-                    grid: {
-                        left: '5%',
-                        right: '5%',
-                        top: '10%',
-                        bottom: '5%',
-                        backgroundColor: 'transparent',
-                        containLabel: true
-                    },
+                        },
+												name: unit,
+												nameLocation: 'middle',
+												nameTextStyle: {
+													color: 'hsl(215.4 16.3% 46.9%)',
+												},
+												nameGap: 40,
+										},
                     series: [{
                         name: series.name,
                         type: 'line',
@@ -507,7 +513,7 @@
                         },
                         markLine: undefined
                     }]
-                };
+                }
 
                 chart.setOption(option, true);
 
