@@ -80,8 +80,11 @@ func Diff(previous, current []Series) []CalculatedDiff {
 		})
 
 		var md []MetricDiff
-		if idx != -1 {
-			md = metricDiff(Measurement{}, s.Measurements[len(s.Measurements)-1])
+		if idx == -1 {
+			md = metricDiff(
+				Measurement{CommitHash: "------"},
+				s.Measurements[len(s.Measurements)-1],
+			)
 		} else {
 			md = metricDiff(
 				previous[idx].Measurements[len(previous[idx].Measurements)-1],

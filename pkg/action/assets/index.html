@@ -430,7 +430,22 @@
                             fontSize: 12
                         },
                         formatter: (params) => {
-                            return `Commit: ${params.name}<br/>Value: ${params.value[1].toLocaleString()} ${unit}`;
+                            const currentValue = params.value[1];
+                            const dataIndex = params.dataIndex;
+
+                            let tooltip = `Commit: ${params.name}<br/>Value: ${currentValue.toLocaleString()} ${unit}`;
+
+                            // Calculate percentage change from previous point
+                            if (dataIndex > 0) {
+                                const previousValue = sortedData[dataIndex - 1][1];
+                                const percentChange = ((currentValue - previousValue) / previousValue * 100);
+                                const changeSign = percentChange > 0 ? '+' : '';
+                                tooltip += `<br/><span style="font-weight: 500;">
+                                    ${changeSign}${percentChange.toFixed(2)}% from previous
+                                </span>`;
+                            }
+
+                            return tooltip;
                         }
                     },
                     xAxis: {
