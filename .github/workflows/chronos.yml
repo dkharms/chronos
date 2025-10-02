@@ -27,6 +27,15 @@ jobs:
         shell: bash
         run: cd examples/gotool/ && go test -run='$^' -bench=. -benchmem | tee ${{ runner.temp }}/gotool.txt
 
+      # Add GitHub job summary for pull requests.
+      - name: Save benchmarks results
+        if: ${{ success() && github.event_name == 'pull_request' }}
+        uses: dkharms/chronos@main
+        with:
+          github-token: ${{ github.token }}
+          benchmarks-file-path: ${{ runner.temp }}/gotool.txt
+          action-to-perform: summarize
+
       # Save benchmarks results only when branch
       # was merged to main and previous job was successful.
       - name: Save benchmarks results
