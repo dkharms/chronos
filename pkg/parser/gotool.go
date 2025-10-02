@@ -1,6 +1,7 @@
 package parser
 
 import (
+	"cmp"
 	_ "embed"
 	"io"
 
@@ -40,8 +41,8 @@ func convert(b benchfmt.Result) benchmark.Result {
 
 	for _, v := range b.Values {
 		r.Metrics = append(r.Metrics, benchmark.Metric{
-			Unit:  v.Unit,
-			Value: v.Value,
+			Unit:  cmp.Or(v.OrigUnit, v.Unit),
+			Value: cmp.Or(v.OrigValue, v.Value),
 		})
 	}
 
