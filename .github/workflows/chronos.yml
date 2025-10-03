@@ -1,3 +1,5 @@
+name: Continuous Benchmarks
+
 on:
   push:
     branches: [ main ]
