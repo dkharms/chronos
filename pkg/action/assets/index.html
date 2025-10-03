@@ -157,7 +157,21 @@
             gap: 8px;
             align-items: flex-end;
         }
-        .screenshot-button {
+        .scale-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            user-select: none;
+        }
+        .scale-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+        .action-button {
             background: hsl(0 0% 100%);
             border: 1px solid hsl(214.3 31.8% 91.4%);
             border-radius: 6px;
@@ -171,29 +185,11 @@
             align-items: center;
             gap: 4px;
         }
-        .screenshot-button:hover {
+        .action-button:hover {
             background: hsl(210 40% 98%);
             border-color: hsl(217.2 32.6% 17.5%);
         }
-        .compare-button {
-            background: hsl(0 0% 100%);
-            border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 6px;
-            padding: 6px 12px;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
-            color: hsl(222.2 84% 4.9%);
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 4px;
-        }
-        .compare-button:hover {
-            background: hsl(210 40% 98%);
-            border-color: hsl(217.2 32.6% 17.5%);
-        }
-        .compare-button.active {
+        .action-button.active {
             background: hsl(221.2 83.2% 53.3%);
             color: hsl(0 0% 100%);
             border-color: hsl(221.2 83.2% 53.3%);
@@ -206,6 +202,10 @@
             border-radius: 6px;
             font-size: 13px;
             display: none;
+        }
+        .chart-wrapper {
+            width: 100%;
+            height: 350px;
         }
         .stats-info {
             margin-top: 0px;
@@ -240,11 +240,6 @@
         .stats-table td {
             font-weight: 500;
         }
-        .chart-wrapper {
-						display: flex;
-						width: 100%;
-            height: 350px;
-        }
         .no-results {
             text-align: center;
             color: hsl(215.4 16.3% 46.9%);
@@ -265,6 +260,8 @@
 </head>
 <body>
     <div>
+        <h1>Chronos Benchmark Results</h1>
+
         <div class="filter-section">
             <span class="filter-label">Filter benchmarks:</span>
             <div class="filter-wrapper">
@@ -280,7 +277,6 @@
     </div>
 
     <script>
-
         // Benchmark data will be injected here by the Go application
         window.BENCHMARK_DATA = {{.BenchmarkData}};
 
@@ -289,26 +285,25 @@
                 this.data = [];
                 this.filteredData = [];
                 this.charts = new Map();
-                this.comparisonState = new Map(); // Track comparison state per chart
+                this.comparisonState = new Map();
                 this.colors = [
-                    'hsl(221.2 83.2% 53.3%)', // blue
-                    'hsl(142.1 76.2% 36.3%)', // green
-                    'hsl(346.8 77.2% 49.8%)', // red
-                    'hsl(258.3 89.5% 66.3%)', // purple
-                    'hsl(24.6 95% 53.1%)', // orange
-                    'hsl(262.1 83.3% 57.8%)', // violet
-                    'hsl(173.4 58.9% 39.1%)', // teal
-                    'hsl(43.3 96.4% 56.3%)', // yellow
-                    'hsl(197.4 71.4% 73.3%)', // sky
-                    'hsl(20.5 90.2% 48.2%)' // amber
+                    'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
+                    'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
+                    'hsl(173.4 58.9% 39.1%)', 'hsl(43.3 96.4% 56.3%)', 'hsl(197.4 71.4% 73.3%)',
+                    'hsl(20.5 90.2% 48.2%)'
                 ];
             }
 
             init() {
                 this.loadData();
-                this.setupEventListeners();
+                this.setupGlobalEventListeners();
                 this.filteredData = [...this.data];
                 this.renderCharts();
+            }
+
+            // Helper method to create safe IDs from series names
+            createSafeId(seriesName) {
+                return seriesName.replace(/[^a-zA-Z0-9]/g, '_');
             }
 
             loadData() {
@@ -317,28 +312,27 @@
                 } catch (error) {
                     console.error('Failed to load benchmark data:', error);
                     this.data = [];
-                    document.getElementById('chartsContainer').innerHTML =
-                        '<div class="no-results">Failed to load benchmark data.</div>';
+                    this.showError('Failed to load benchmark data.');
                 }
             }
 
-            setupEventListeners() {
+            showError(message) {
+                document.getElementById('chartsContainer').innerHTML =
+                    `<div class="no-results">${message}</div>`;
+            }
+
+            setupGlobalEventListeners() {
                 const filterInput = document.getElementById('benchmarkFilter');
                 const clearButton = document.getElementById('clearFilter');
 
-                filterInput.addEventListener('input', (e) => {
-                    this.filterBenchmarks(e.target.value);
-                });
-
+                filterInput.addEventListener('input', (e) => this.filterBenchmarks(e.target.value));
                 clearButton.addEventListener('click', () => {
                     filterInput.value = '';
                     this.filterBenchmarks('');
                 });
 
                 window.addEventListener('resize', () => {
-                    this.charts.forEach(chart => {
-                        chart.resize();
-                    });
+                    this.charts.forEach(chart => chart.resize());
                 });
             }
 
@@ -361,79 +355,256 @@
 
                 if (this.filteredData.length === 0) {
                     if (this.data.length === 0) {
-                        container.innerHTML = '<div class="no-results">No benchmark data available.</div>';
+                        this.showError('No benchmark data available.');
                     } else {
-                        container.innerHTML = '<div class="no-results">No benchmarks found matching the filter.</div>';
+                        this.showError('No benchmarks found matching the filter.');
                     }
                     return;
                 }
 
                 this.filteredData.forEach((series, index) => {
-                    this.createBenchmarkChart(series, container, index);
+                    this.createChart(series, container, index);
                 });
             }
 
-            createBenchmarkChart(series, container, index) {
+            createChart(series, container, index) {
+                const safeId = this.createSafeId(series.name);
+                const units = this.getUnitsForSeries(series);
+
                 const chartDiv = document.createElement('div');
                 chartDiv.className = 'chart-card';
+                chartDiv.innerHTML = this.createChartHTML(series, units, safeId);
 
-                const units = this.getUnitsForSeries(series);
-                const tabsHtml = units.map((unit, tabIndex) =>
-                    `<button class="unit-tab ${tabIndex === 0 ? 'active' : ''}" data-unit="${unit}">
-                        ${this.formatUnitName(unit)}
+                container.appendChild(chartDiv);
+
+                // Initialize chart after DOM is ready
+                setTimeout(() => this.initializeChart(chartDiv, series, index, units[0]), 10);
+            }
+
+            createChartHTML(series, units, safeId) {
+                const tabsHtml = units.map((unit, index) =>
+                    `<button class="unit-tab ${index === 0 ? 'active' : ''}" data-unit="${unit}">
+                        ${unit}
                     </button>`
                 ).join('');
 
-                chartDiv.innerHTML = `
+                return `
                     <h2 class="chart-title">${series.name}</h2>
                     <div class="tab-container">
-                        <div class="tabs-group">
-                            ${tabsHtml}
-                        </div>
+                        <div class="tabs-group">${tabsHtml}</div>
                         <div class="buttons-group">
-                            <button class="screenshot-button" data-chart="${series.name}">
+                            <label class="scale-checkbox">
+                                <input type="checkbox" id="scale-${safeId}" checked>
+                                <span>Scale Y-axis</span>
+                            </label>
+                            <button class="action-button screenshot-btn" data-chart="${series.name}">
                                 📷 Save PNG
                             </button>
-                            <button class="compare-button" data-chart="${series.name}">
+                            <button class="action-button compare-btn" data-chart="${series.name}">
                                 📊 Compare
                             </button>
                         </div>
                     </div>
-                    <div class="comparison-info" id="comparison-${series.name}"></div>
+                    <div class="comparison-info" id="comparison-${safeId}"></div>
                     <div class="chart-wrapper"></div>
-                    <div class="stats-info" id="stats-${series.name}"></div>
+                    <div class="stats-info" id="stats-${safeId}"></div>
                 `;
-
-                container.appendChild(chartDiv);
-
-                // Use setTimeout to ensure DOM is fully rendered before initializing chart
-                setTimeout(() => {
-                    const chartWrapper = chartDiv.querySelector('.chart-wrapper');
-                    const chart = echarts.init(chartWrapper);
-                    this.charts.set(series.name, chart);
-
-                    this.setupTabSwitching(chartDiv, series, chart, index);
-                    this.renderChartForUnit(series, units[0], chart, index);
-                }, 10);
             }
 
-            getUnitsForSeries(series) {
-                const units = new Set();
-                series.measurements.forEach(measurement => {
-                    measurement.metrics.forEach(metric => {
-                        units.add(metric.unit);
+            initializeChart(chartDiv, series, index, defaultUnit) {
+                const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                const chart = echarts.init(chartWrapper);
+                const safeId = this.createSafeId(series.name);
+
+                this.charts.set(series.name, chart);
+                this.setupChartEventListeners(chartDiv, series, chart, index);
+                this.renderChartForUnit(series, defaultUnit, chart, index);
+            }
+
+            setupChartEventListeners(chartDiv, series, chart, index) {
+                const safeId = this.createSafeId(series.name);
+
+                // Unit tabs
+                chartDiv.querySelectorAll('.unit-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.unit-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.renderChartForUnit(series, e.target.dataset.unit, chart, index);
                     });
                 });
-                return Array.from(units).sort();
+
+                // Scale checkbox
+                const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                scaleCheckbox?.addEventListener('change', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    if (activeTab) {
+                        this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                    }
+                });
+
+                // Screenshot button
+                chartDiv.querySelector('.screenshot-btn')?.addEventListener('click', () => {
+                    this.downloadScreenshot(chart, series.name);
+                });
+
+                // Compare button
+                chartDiv.querySelector('.compare-btn')?.addEventListener('click', (e) => {
+                    this.toggleComparisonMode(series.name, e.target);
+                });
             }
 
-            formatUnitName(unit) {
-                return unit;
+            renderChartForUnit(series, unit, chart, index) {
+                const data = this.extractChartData(series, unit);
+                const shouldScale = this.shouldScaleChart(series.name);
+                const option = this.createChartOption(series, unit, data, index, shouldScale);
+
+                chart.setOption(option, true);
+                this.updateStatistics(series.name, data.values, unit);
+                this.setupChartClickHandler(chart, series.name, unit, data);
+            }
+
+            extractChartData(series, unit) {
+                const plotData = [];
+                const commitHashes = [];
+                const values = [];
+
+                series.measurements.forEach(measurement => {
+                    const metric = measurement.metrics.find(m => m.unit === unit);
+                    if (metric) {
+                        const shortHash = measurement.commit_hash.substring(0, 8);
+                        plotData.push([shortHash, metric.value]);
+                        commitHashes.push(measurement.commit_hash);
+                        values.push(metric.value);
+                    }
+                });
+
+                return { plotData, commitHashes, values };
+            }
+
+            shouldScaleChart(seriesName) {
+                const safeId = this.createSafeId(seriesName);
+                const checkbox = document.getElementById(`scale-${safeId}`);
+                return checkbox ? checkbox.checked : true;
+            }
+
+            createChartOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                return {
+                    animation: true,
+                    tooltip: this.createTooltipConfig(unit, data),
+                    xAxis: this.createXAxisConfig(),
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [{
+                        name: series.name,
+                        type: 'line',
+                        data: data.plotData,
+                        symbol: 'circle',
+                        symbolSize: 7,
+                        smooth: true,
+                        lineStyle: { width: 2, color: color },
+                        itemStyle: { color: color },
+                        emphasis: { disabled: true },
+                        blur: { disabled: true },
+                        select: { disabled: true }
+                    }]
+                };
+            }
+
+            createTooltipConfig(unit, data) {
+                return {
+                    trigger: 'item',
+                    backgroundColor: 'hsl(0 0% 100%)',
+                    borderColor: 'hsl(214.3 31.8% 91.4%)',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: 'hsl(222.2 84% 4.9%)',
+                        fontSize: 12,
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    formatter: (params) => {
+                        const currentValue = params.value[1];
+                        const dataIndex = params.dataIndex;
+                        let tooltip = `Commit: ${params.name}<br/>Value: ${currentValue.toLocaleString()} ${unit}`;
+
+                        if (dataIndex > 0) {
+                            const previousValue = data.plotData[dataIndex - 1][1];
+                            const percentChange = ((currentValue - previousValue) / previousValue * 100);
+                            const changeSign = percentChange > 0 ? '+' : '';
+                            tooltip += `<br/><span style="font-weight: 500;">
+                                ${changeSign}${percentChange.toFixed(2)}% from previous
+                            </span>`;
+                        }
+                        return tooltip;
+                    }
+                };
+            }
+
+            createXAxisConfig() {
+                return {
+                    type: 'category',
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        rotate: 45, fontSize: 11,
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    }
+                };
+            }
+
+            createYAxisConfig(unit, shouldScale) {
+                return {
+                    type: 'value',
+                    scale: shouldScale,
+                    name: unit,
+                    nameLocation: 'middle',
+                    nameGap: 40,
+                    nameTextStyle: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontSize: 11,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        formatter: (value) => {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                            return value.toLocaleString();
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: { color: 'hsl(214.3 31.8% 91.4%)', type: 'dashed' }
+                    }
+                };
+            }
+
+            setupChartClickHandler(chart, seriesName, unit, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.seriesType === 'line') {
+                        const comparisonHandled = this.handleComparisonClick(seriesName, params, unit, data);
+                        if (!comparisonHandled) {
+                            this.openCommitUrl(data.commitHashes[params.dataIndex]);
+                        }
+                    }
+                });
+            }
+
+            openCommitUrl(commitHash) {
+                const repoUrl = this.getRepositoryUrl();
+                if (repoUrl && commitHash) {
+                    window.open(`${repoUrl}/commit/${commitHash}`, '_blank');
+                }
             }
 
             getRepositoryUrl() {
-                // Try to get repository URL from various sources
-                // 1. Check if we're on GitHub Pages
                 const hostname = window.location.hostname;
                 if (hostname.endsWith('.github.io')) {
                     const parts = hostname.split('.');
@@ -443,57 +614,59 @@
                         return `https://github.com/${username}/${repoName}`;
                     }
                 }
-
-                // 2. Check for common GitHub repository patterns in URL
                 if (window.location.href.includes('github.com')) {
                     const match = window.location.href.match(/github\.com\/([^\/]+\/[^\/]+)/);
-                    if (match) {
-                        return `https://github.com/${match[1]}`;
-                    }
+                    if (match) return `https://github.com/${match[1]}`;
                 }
-
-                // 3. Default fallback - you can customize this for your specific repository
-                // For now, we'll try to construct from the page title or use a generic pattern
-                return 'https://github.com/dkharms/chronos'; // Update this to your actual repository
+                return 'https://github.com/dkharms/chronos';
             }
 
-            setupTabSwitching(chartDiv, series, chart, index) {
-                const tabs = chartDiv.querySelectorAll('.unit-tab');
-                tabs.forEach(tab => {
-                    tab.addEventListener('click', (e) => {
-                        const unit = e.target.dataset.unit;
+            updateStatistics(seriesName, values, unit) {
+                const safeId = this.createSafeId(seriesName);
+                const statsDiv = document.getElementById(`stats-${safeId}`);
+                if (!statsDiv || values.length === 0) return;
 
-                        tabs.forEach(t => t.classList.remove('active'));
-                        e.target.classList.add('active');
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                const cv = (stdDev / mean) * 100;
 
-                        this.renderChartForUnit(series, unit, chart, index);
-                    });
-                });
+                const formatValue = (value) => {
+                    if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
+                    if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
+                    return value.toLocaleString();
+                };
 
-                // Add screenshot functionality
-                const screenshotButton = chartDiv.querySelector('.screenshot-button');
-                screenshotButton.addEventListener('click', () => {
-                    this.downloadChartScreenshot(chart, series.name);
-                });
-
-                // Add comparison functionality
-                const compareButton = chartDiv.querySelector('.compare-button');
-                compareButton.addEventListener('click', () => {
-                    this.toggleComparisonMode(series.name, compareButton);
-                });
+                statsDiv.innerHTML = `
+                    <table class="stats-table">
+                        <thead>
+                            <tr><th>Min</th><th>Max</th><th>Mean</th><th>Std Dev</th><th>CV %</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatValue(min)} ${unit}</td>
+                                <td>${formatValue(max)} ${unit}</td>
+                                <td>${formatValue(mean)} ${unit}</td>
+                                <td>${formatValue(stdDev)} ${unit}</td>
+                                <td>${cv.toFixed(1)}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
             }
 
-            downloadChartScreenshot(chart, chartName) {
+            downloadScreenshot(chart, chartName) {
                 try {
                     // Get chart image
                     const chartDataURL = chart.getDataURL({
-                        type: 'png',
-                        pixelRatio: 2,
-                        backgroundColor: '#ffffff'
+                        type: 'png', pixelRatio: 2, backgroundColor: '#ffffff'
                     });
 
                     // Get stats table element
-                    const statsTable = document.getElementById(`stats-${chartName}`).querySelector('.stats-table');
+                    const safeId = this.createSafeId(chartName);
+                    const statsTable = document.getElementById(`stats-${safeId}`).querySelector('.stats-table');
 
                     // Create canvas to combine chart and table
                     const canvas = document.createElement('canvas');
@@ -515,7 +688,7 @@
                         // Draw chart
                         ctx.drawImage(chartImg, 0, 0);
 
-                        // Draw table as HTML to canvas
+                        // Draw table
                         this.drawTableToCanvas(ctx, statsTable, 0, chartImg.height + spacing, canvas.width, tableHeight)
                             .then(() => {
                                 // Download combined image
@@ -528,21 +701,13 @@
                     chartImg.src = chartDataURL;
 
                 } catch (error) {
-                    console.error('Failed to download chart screenshot:', error);
+                    console.error('Screenshot failed:', error);
                     alert('Failed to save screenshot. Please try again.');
                 }
             }
 
             async drawTableToCanvas(ctx, table, x, y, width, height) {
                 return new Promise((resolve) => {
-                    // Create a temporary div to hold the table for measurement
-                    const tempDiv = document.createElement('div');
-                    tempDiv.style.position = 'absolute';
-                    tempDiv.style.left = '-9999px';
-                    tempDiv.style.width = width + 'px';
-                    tempDiv.appendChild(table.cloneNode(true));
-                    document.body.appendChild(tempDiv);
-
                     // Get table data
                     const rows = table.querySelectorAll('tr');
                     const cellData = [];
@@ -555,8 +720,6 @@
                         }));
                         cellData.push(rowData);
                     });
-
-                    document.body.removeChild(tempDiv);
 
                     // Draw table manually
                     const cellWidth = width / cellData[0].length;
@@ -600,39 +763,35 @@
             }
 
             toggleComparisonMode(chartName, button) {
-                const state = this.comparisonState.get(chartName) || { active: false, selectedPoints: [], currentUnit: null };
-
+                const state = this.comparisonState.get(chartName) || { active: false, selectedPoints: [] };
                 if (state.active) {
-                    // Exit comparison mode
                     this.exitComparisonMode(chartName, button);
                 } else {
-                    // Enter comparison mode
                     this.enterComparisonMode(chartName, button);
                 }
             }
 
             enterComparisonMode(chartName, button) {
-                const state = { active: true, selectedPoints: [], currentUnit: null };
+                const state = { active: true, selectedPoints: [] };
                 this.comparisonState.set(chartName, state);
-
                 button.classList.add('active');
                 button.textContent = '❌ Cancel Compare';
 
-                const comparisonInfo = document.getElementById(`comparison-${chartName}`);
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
                 comparisonInfo.style.display = 'block';
                 comparisonInfo.innerHTML = '<strong>Comparison Mode:</strong> Click on two data points to compare them.';
             }
 
             exitComparisonMode(chartName, button) {
                 this.comparisonState.delete(chartName);
-
                 button.classList.remove('active');
                 button.textContent = '📊 Compare';
 
-                const comparisonInfo = document.getElementById(`comparison-${chartName}`);
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
                 comparisonInfo.style.display = 'none';
 
-                // Reset chart styling
                 const chart = this.charts.get(chartName);
                 if (chart) {
                     const option = chart.getOption();
@@ -641,51 +800,49 @@
                 }
             }
 
-            handleComparisonClick(chartName, params, unit, sortedData, sortedHashes) {
+            handleComparisonClick(chartName, params, unit, data) {
                 const state = this.comparisonState.get(chartName);
                 if (!state || !state.active) return false;
 
-                state.currentUnit = unit;
                 const pointData = {
                     index: params.dataIndex,
                     commit: params.name,
-                    fullCommit: sortedHashes[params.dataIndex],
+                    fullCommit: data.commitHashes[params.dataIndex],
                     value: params.value[1]
                 };
 
                 if (state.selectedPoints.length === 0) {
-                    // First point selected
                     state.selectedPoints.push(pointData);
-                    this.updateComparisonDisplay(chartName, state, 'first');
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
                 } else if (state.selectedPoints.length === 1) {
-                    // Second point selected - show comparison
                     state.selectedPoints.push(pointData);
                     this.showComparison(chartName, state, unit);
                 } else {
-                    // Reset and select new first point
                     state.selectedPoints = [pointData];
-                    this.updateComparisonDisplay(chartName, state, 'first');
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
                 }
 
-                this.highlightSelectedPoints(chartName, state, sortedData);
-                return true; // Consumed the click
+                this.highlightSelectedPoints(chartName, state);
+                return true;
             }
 
-            updateComparisonDisplay(chartName, state, mode) {
-                const comparisonInfo = document.getElementById(`comparison-${chartName}`);
+            updateComparisonDisplay(chartName, state, mode, unit) {
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
                 if (mode === 'first') {
                     const point = state.selectedPoints[0];
-                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${point.value.toLocaleString()} ${state.currentUnit})<br/><em>Click another point to compare.</em>`;
+                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${point.value.toLocaleString()} ${unit})<br/><em>Click another point to compare.</em>`;
                 }
             }
 
             showComparison(chartName, state, unit) {
                 const [point1, point2] = state.selectedPoints;
                 const diff = point2.value - point1.value;
-                const percentChange = ((diff) / point1.value * 100);
+                const percentChange = (diff / point1.value * 100);
                 const changeSign = diff > 0 ? '+' : '';
 
-                const comparisonInfo = document.getElementById(`comparison-${chartName}`);
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
                 comparisonInfo.innerHTML = `
                     <strong>Comparison Results:</strong><br/>
                     <strong>Point 1:</strong> ${point1.commit} → ${point1.value.toLocaleString()} ${unit}<br/>
@@ -694,7 +851,7 @@
                 `;
             }
 
-            highlightSelectedPoints(chartName, state, sortedData) {
+            highlightSelectedPoints(chartName, state) {
                 const chart = this.charts.get(chartName);
                 if (!chart) return;
 
@@ -702,232 +859,28 @@
                     coord: [point.index, point.value],
                     symbol: 'pin',
                     symbolSize: 30,
-                    itemStyle: {
-                        color: index === 0 ? '#3b82f6' : '#ef4444'
-                    },
+                    itemStyle: { color: index === 0 ? '#3b82f6' : '#ef4444' },
                     label: {
-                        show: true,
-                        position: 'top',
-                        formatter: `Point ${index + 1}`,
-                        color: '#000'
+                        show: true, position: 'top',
+                        formatter: `Point ${index + 1}`, color: '#000'
                     }
                 }));
 
                 const option = chart.getOption();
-                option.series[0].markPoint = {
-                    data: markPoints
-                };
+                option.series[0].markPoint = { data: markPoints };
                 chart.setOption(option);
             }
 
-            renderChartForUnit(series, unit, chart, index) {
-                const data = [];
-                const commitHashes = [];
-
+            getUnitsForSeries(series) {
+                const units = new Set();
                 series.measurements.forEach(measurement => {
-                    const metric = measurement.metrics.find(m => m.unit === unit);
-                    if (metric) {
-                        data.push([measurement.commit_hash.substring(0, 8), metric.value]);
-                        commitHashes.push(measurement.commit_hash);
-                    }
+                    measurement.metrics.forEach(metric => units.add(metric.unit));
                 });
-
-                // Keep original order - no sorting needed
-                const sortedData = data;
-                const sortedHashes = commitHashes;
-
-                const color = this.colors[index % this.colors.length];
-                const option = {
-                    animation: true,
-                    tooltip: {
-                        trigger: 'item',
-                        backgroundColor: 'hsl(0 0% 100%)',
-                        borderColor: 'hsl(214.3 31.8% 91.4%)',
-                        borderWidth: 1,
-                        textStyle: {
-                            color: 'hsl(222.2 84% 4.9%)',
-                            fontSize: 12,
-                            fontFamily: 'JetBrains Mono, monospace'
-                        },
-                        formatter: (params) => {
-                            const currentValue = params.value[1];
-                            const dataIndex = params.dataIndex;
-
-                            let tooltip = `Commit: ${params.name}<br/>Value: ${currentValue.toLocaleString()} ${unit}`;
-
-                            // Calculate percentage change from previous point
-                            if (dataIndex > 0) {
-                                const previousValue = sortedData[dataIndex - 1][1];
-                                const percentChange = ((currentValue - previousValue) / previousValue * 100);
-                                const changeSign = percentChange > 0 ? '+' : '';
-                                tooltip += `<br/><span style="font-weight: 500;">
-                                    ${changeSign}${percentChange.toFixed(2)}% from previous
-                                </span>`;
-                            }
-
-                            return tooltip;
-                        }
-                    },
-                    xAxis: {
-                        type: 'category',
-                        axisLine: {
-                            lineStyle: {
-                                color: 'hsl(214.3 31.8% 91.4%)'
-                            }
-                        },
-                        axisTick: {
-                            lineStyle: {
-                                color: 'hsl(214.3 31.8% 91.4%)'
-                            }
-                        },
-                        axisLabel: {
-                            rotate: 45,
-                            fontSize: 11,
-                            color: 'hsl(215.4 16.3% 46.9%)',
-                            fontFamily: 'JetBrains Mono, monospace'
-                        }
-                    },
-                    yAxis: {
-                        type: 'value',
-                        scale: true,
-                        axisLine: {
-                            lineStyle: {
-                                color: 'hsl(214.3 31.8% 91.4%)'
-                            }
-                        },
-                        axisTick: {
-                            lineStyle: {
-                                color: 'hsl(214.3 31.8% 91.4%)'
-                            }
-                        },
-                        axisLabel: {
-                            color: 'hsl(215.4 16.3% 46.9%)',
-                            fontSize: 11,
-                            fontFamily: 'JetBrains Mono, monospace',
-                            formatter: (value) => {
-                                if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
-                                if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
-								return value.toLocaleString();
-                            }
-                        },
-                        splitLine: {
-                            lineStyle: {
-                                color: 'hsl(214.3 31.8% 91.4%)',
-                                type: 'dashed'
-                            }
-                        },
-						name: unit,
-						nameLocation: 'middle',
-						nameTextStyle: {
-							color: 'hsl(215.4 16.3% 46.9%)',
-							fontFamily: 'JetBrains Mono, monospace'
-						},
-						nameGap: 40,
-					},
-                    grid: {
-                        left: '5%',
-                        right: '5%',
-                        top: '15px',
-                        bottom: '15px',
-                        containLabel: true
-                    },
-                    series: [{
-                        name: series.name,
-                        type: 'line',
-                        data: sortedData,
-                        symbol: 'circle',
-                        symbolSize: 7,
-                        smooth: true,
-                        lineStyle: {
-                            width: 2,
-                            color: color
-                        },
-                        itemStyle: {
-                            color: color
-                        },
-                        emphasis: {
-                            disabled: true
-                        },
-                        blur: {
-                            disabled: true
-                        },
-                        select: {
-                            disabled: true
-                        },
-                        markLine: undefined
-                    }]
-                }
-
-                chart.setOption(option, true);
-
-                // Calculate and display statistics
-                this.updateStatistics(series.name, sortedData, unit);
-
-                // Add click event to open commit URL or handle comparison
-                chart.off('click'); // Remove any existing click handlers
-                chart.on('click', (params) => {
-                    if (params.componentType === 'series' && params.seriesType === 'line') {
-                        // Check if in comparison mode first
-                        const comparisonHandled = this.handleComparisonClick(series.name, params, unit, sortedData, sortedHashes);
-
-                        if (!comparisonHandled) {
-                            // Normal click - open commit URL
-                            const commitHash = sortedHashes[params.dataIndex];
-                            const repoUrl = this.getRepositoryUrl();
-                            if (repoUrl && commitHash) {
-                                const commitUrl = `${repoUrl}/commit/${commitHash}`;
-                                window.open(commitUrl, '_blank');
-                            }
-                        }
-                    }
-                });
-            }
-
-            updateStatistics(seriesName, sortedData, unit) {
-                const statsDiv = document.getElementById(`stats-${seriesName}`);
-                if (!statsDiv || sortedData.length === 0) return;
-
-                const values = sortedData.map(item => item[1]);
-                const min = Math.min(...values);
-                const max = Math.max(...values);
-                const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
-                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
-                const stdDev = Math.sqrt(variance);
-
-                const formatValue = (value) => {
-                    if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
-                    if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
-                    return value.toLocaleString();
-                };
-
-                const coefficientOfVariation = (stdDev / mean) * 100;
-
-                statsDiv.innerHTML = `
-                    <table class="stats-table">
-                        <thead>
-                            <tr>
-                                <th>Min</th>
-                                <th>Max</th>
-                                <th>Mean</th>
-                                <th>Std Dev</th>
-                                <th>CV %</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>${formatValue(min)} ${unit}</td>
-                                <td>${formatValue(max)} ${unit}</td>
-                                <td>${formatValue(mean)} ${unit}</td>
-                                <td>${formatValue(stdDev)} ${unit}</td>
-                                <td>${coefficientOfVariation.toFixed(1)}%</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                `;
+                return Array.from(units).sort();
             }
         }
 
-        // Wait for both DOM and ECharts to be ready
+        // Initialize when ready
         function initializeWhenReady() {
             if (typeof echarts !== 'undefined' && document.readyState === 'complete') {
                 const visualizer = new BenchmarkVisualizer();
