@@ -198,6 +198,20 @@
             color: hsl(0 0% 100%);
             border-color: hsl(221.2 83.2% 53.3%);
         }
+        .scale-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            user-select: none;
+        }
+        .scale-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
         .comparison-info {
             margin-top: 12px;
             padding: 12px;
@@ -280,7 +294,6 @@
     </div>
 
     <script>
-
         // Benchmark data will be injected here by the Go application
         window.BENCHMARK_DATA = {{.BenchmarkData}};
 
@@ -391,6 +404,10 @@
                             ${tabsHtml}
                         </div>
                         <div class="buttons-group">
+                            <label class="scale-checkbox">
+                                <input type="checkbox" id="scale-${series.name.replace(/[^a-zA-Z0-9]/g, '_')}" checked>
+                                <span>Scale Y-axis</span>
+                            </label>
                             <button class="screenshot-button" data-chart="${series.name}">
                                 📷 Save PNG
                             </button>
@@ -481,6 +498,19 @@
                 compareButton.addEventListener('click', () => {
                     this.toggleComparisonMode(series.name, compareButton);
                 });
+
+                // Add scale checkbox functionality
+                const safeId = series.name.replace(/[^a-zA-Z0-9]/g, '_');
+                const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                if (scaleCheckbox) {
+                    scaleCheckbox.addEventListener('change', () => {
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            const unit = activeTab.dataset.unit;
+                            this.renderChartForUnit(series, unit, chart, index);
+                        }
+                    });
+                }
             }
 
             downloadChartScreenshot(chart, chartName) {
@@ -737,6 +767,12 @@
                 const sortedHashes = commitHashes;
 
                 const color = this.colors[index % this.colors.length];
+
+                // Check if scaling is enabled
+                const safeId = series.name.replace(/[^a-zA-Z0-9]/g, '_');
+                const scaleCheckbox = document.getElementById(`scale-${safeId}`);
+                const shouldScale = scaleCheckbox ? scaleCheckbox.checked : true;
+
                 const option = {
                     animation: true,
                     tooltip: {
@@ -789,7 +825,7 @@
                     },
                     yAxis: {
                         type: 'value',
-                        scale: true,
+                        scale: shouldScale,
                         axisLine: {
                             lineStyle: {
                                 color: 'hsl(214.3 31.8% 91.4%)'
