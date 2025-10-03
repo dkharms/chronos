@@ -280,6 +280,7 @@
     </div>
 
     <script>
+
         // Benchmark data will be injected here by the Go application
         window.BENCHMARK_DATA = {{.BenchmarkData}};
 
@@ -584,7 +585,7 @@
 
                             // Draw text
                             ctx.fillStyle = cell.isHeader ? '#64748b' : '#0f172a';
-                            ctx.font = cell.isHeader ? '600 11px sans-serif' : '500 12px sans-serif';
+                            ctx.font = cell.isHeader ? '600 11px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
                             ctx.textAlign = 'center';
                             ctx.textBaseline = 'middle';
 
@@ -745,7 +746,8 @@
                         borderWidth: 1,
                         textStyle: {
                             color: 'hsl(222.2 84% 4.9%)',
-                            fontSize: 12
+                            fontSize: 12,
+                            fontFamily: 'JetBrains Mono, monospace'
                         },
                         formatter: (params) => {
                             const currentValue = params.value[1];
@@ -781,7 +783,8 @@
                         axisLabel: {
                             rotate: 45,
                             fontSize: 11,
-                            color: 'hsl(215.4 16.3% 46.9%)'
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontFamily: 'JetBrains Mono, monospace'
                         }
                     },
                     yAxis: {
@@ -800,6 +803,7 @@
                         axisLabel: {
                             color: 'hsl(215.4 16.3% 46.9%)',
                             fontSize: 11,
+                            fontFamily: 'JetBrains Mono, monospace',
                             formatter: (value) => {
                                 if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
                                 if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
@@ -816,6 +820,7 @@
 						nameLocation: 'middle',
 						nameTextStyle: {
 							color: 'hsl(215.4 16.3% 46.9%)',
+							fontFamily: 'JetBrains Mono, monospace'
 						},
 						nameGap: 40,
 					},
