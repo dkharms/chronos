@@ -5,10 +5,8 @@
 ### Features
 
 Here are the features that `chronos` provides:
-- A UI with benchmark grouping, filtering, point comparison, and chart screenshots;
-- Summarization of pull request benchmarks (and comparison with the latest one) in GitHub Job Summary;
-
-An interactive version can be found [here](https://dkharms.github.io/chronos).
+- A [UI](https://dkharms.github.io/chronos) with benchmark grouping, filtering, point comparison, and chart screenshots;
+- [Summarization](https://github.com/dkharms/chronos/actions/runs/18197908739#summary-51808947342) of pull request benchmarks (and comparison with the latest one) in GitHub Job Summary;
 
 ### Rationale
 
