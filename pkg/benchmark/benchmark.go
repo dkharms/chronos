@@ -28,14 +28,32 @@ func Merge(previous, current []Series) []Series {
 			return v.Name == s.Name
 		})
 
+		// Found a benchmark that was not collected previously.
 		if idx == -1 {
 			merged = append(merged, s)
 			continue
 		}
 
+		var unique []Measurement
 		previous := previous[idx]
-		previous.Measurements = append(previous.Measurements, s.Measurements...)
 
+		// Do not add new benchmark measurement with commit hash `h`
+		// if it's already presented in collected results from previous runs.
+		for _, m := range s.Measurements {
+			contains := slices.ContainsFunc(
+				previous.Measurements, func(pm Measurement) bool {
+					return pm.CommitHash == m.CommitHash
+				},
+			)
+
+			if contains {
+				continue
+			}
+
+			unique = append(unique, m)
+		}
+
+		previous.Measurements = append(previous.Measurements, unique...)
 		merged = append(merged, previous)
 	}
 
