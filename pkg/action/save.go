@@ -79,7 +79,7 @@ func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
 }
 
 func parseBenchmarkSeries(commitHash, path string) ([]benchmark.Series, error) {
-	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0o644)
+	f, err := os.OpenFile(path, os.O_RDONLY, 0o644)
 	if err != nil {
 		return nil, err
 	}
