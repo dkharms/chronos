@@ -1,6 +1,6 @@
 <div align="center">🕐 chronos is a continuous benchmarking tool that tracks performance metrics over time</div>
 
-![home-page](https://github.com/user-attachments/assets/06b43941-1149-4b9a-9d41-ac6d26a08631)
+<img width="1436" height="931" alt="image" src="https://github.com/user-attachments/assets/5c8b111e-3f86-4d79-8c2c-c4be9e3b604c" />
 
 ### Features
 
