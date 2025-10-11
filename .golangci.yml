@@ -42,6 +42,10 @@ linters:
       parameters-are-used: true
       local-variables-are-used: false
       generated-is-used: false
+    govet:
+      enable-all: true
+      disable:
+        - composites
   exclusions:
     generated: lax
     rules:
