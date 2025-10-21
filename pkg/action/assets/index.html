@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chronos Benchmark Results</title>
+    <title>🕐 chronos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
@@ -104,14 +104,35 @@
             background: hsl(0 0% 100%);
             box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
         }
-        .chart-title {
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
             margin: 0 0 20px 0;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            padding-bottom: 12px;
+        }
+        .chart-title {
+            margin: 0;
             color: hsl(222.2 84% 4.9%);
             font-size: 18px;
             font-weight: 600;
             letter-spacing: -0.025em;
-            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
-            padding-bottom: 12px;
+        }
+        .fullscreen-btn {
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            font-size: 16px;
+            cursor: pointer;
+            color: hsl(222.2 84% 4.9%);
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .fullscreen-btn:hover {
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
         }
         .unit-tab {
             background: hsl(0 0% 100%);
@@ -157,6 +178,16 @@
             gap: 8px;
             align-items: flex-end;
         }
+        .action-buttons-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .icon-buttons-group {
+            display: flex;
+            gap: 4px;
+        }
         .scale-checkbox {
             display: flex;
             align-items: center;
@@ -172,27 +203,53 @@
             cursor: pointer;
         }
         .action-button {
-            background: hsl(0 0% 100%);
+            background: hsl(210 40% 98%);
             border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 6px;
-            padding: 6px 12px;
+            padding: 6px 10px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 16px;
             color: hsl(222.2 84% 4.9%);
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 4px;
+            border-radius: 4px;
+            line-height: 1;
         }
         .action-button:hover {
-            background: hsl(210 40% 98%);
+            background: hsl(0 0% 100%);
             border-color: hsl(217.2 32.6% 17.5%);
         }
         .action-button.active {
             background: hsl(221.2 83.2% 53.3%);
             color: hsl(0 0% 100%);
             border-color: hsl(221.2 83.2% 53.3%);
+        }
+        .chart-type-toggle {
+            display: flex;
+            gap: 4px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 2px;
+            background: hsl(210 40% 98%);
+        }
+        .chart-type-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(215.4 16.3% 46.9%);
+            transition: all 0.2s ease;
+        }
+        .chart-type-btn:hover {
+            color: hsl(222.2 84% 4.9%);
+        }
+        .chart-type-btn.active {
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
         }
         .comparison-info {
             margin-top: 12px;
@@ -202,6 +259,85 @@
             border-radius: 6px;
             font-size: 13px;
             display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: hsl(0 0% 0% / 0.8);
+            animation: fadeIn 0.2s ease;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: hsl(0 0% 100%);
+            border-radius: 8px;
+            width: 95%;
+            height: 90%;
+            max-width: 1800px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: hsl(222.2 84% 4.9%);
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: hsl(215.4 16.3% 46.9%);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
+        }
+        .modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+        }
+        .modal-chart {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
         .chart-wrapper {
             width: 100%;
@@ -272,6 +408,18 @@
         <div id="chartsContainer" class="charts-container">
             <div class="loading">Loading benchmark data...</div>
         </div>
+
+        <div id="chartModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalTitle"></h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalChart" class="modal-chart"></div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -284,6 +432,7 @@
                 this.filteredData = [];
                 this.charts = new Map();
                 this.comparisonState = new Map();
+                this.chartTypes = new Map(); // Track chart type per series (line or boxplot)
                 this.colors = [
                     'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
                     'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
@@ -387,20 +536,27 @@
                 ).join('');
 
                 return `
-                    <h2 class="chart-title">${series.name}</h2>
+                    <div class="chart-header">
+                        <h2 class="chart-title">${series.name}</h2>
+                        <button class="fullscreen-btn" data-chart="${series.name}">⛶</button>
+                    </div>
                     <div class="tab-container">
                         <div class="tabs-group">${tabsHtml}</div>
                         <div class="buttons-group">
-                            <label class="scale-checkbox">
-                                <input type="checkbox" id="scale-${safeId}" checked>
-                                <span>Scale Y-axis</span>
-                            </label>
-                            <button class="action-button screenshot-btn" data-chart="${series.name}">
-                                📷 Save PNG
-                            </button>
-                            <button class="action-button compare-btn" data-chart="${series.name}">
-                                📊 Compare
-                            </button>
+                            <div class="chart-type-toggle">
+                                <button class="chart-type-btn active" data-type="line">Line</button>
+                                <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
+                            </div>
+                            <div class="action-buttons-row">
+                                <div class="icon-buttons-group">
+                                    <button class="action-button screenshot-btn" data-chart="${series.name}">📷</button>
+                                    <button class="action-button compare-btn" data-chart="${series.name}">📊</button>
+                                </div>
+                                <label class="scale-checkbox">
+                                    <input type="checkbox" id="scale-${safeId}" checked>
+                                    <span>Scale Y-axis</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="comparison-info" id="comparison-${safeId}"></div>
@@ -422,6 +578,36 @@
             setupChartEventListeners(chartDiv, series, chart, index) {
                 const safeId = this.createSafeId(series.name);
 
+                // Chart type toggle
+                chartDiv.querySelectorAll('.chart-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const chartType = e.target.dataset.type;
+                        this.chartTypes.set(series.name, chartType);
+
+                        // Exit comparison mode when switching chart types
+                        const compareBtn = chartDiv.querySelector('.compare-btn');
+                        if (this.comparisonState.has(series.name)) {
+                            this.exitComparisonMode(series.name, compareBtn);
+                        }
+
+                        // Update compare button visibility (disable for boxplot)
+                        if (chartType === 'boxplot') {
+                            compareBtn.style.opacity = '0.5';
+                            compareBtn.style.pointerEvents = 'none';
+                        } else {
+                            compareBtn.style.opacity = '1';
+                            compareBtn.style.pointerEvents = 'auto';
+                        }
+
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                        }
+                    });
+                });
+
                 // Unit tabs
                 chartDiv.querySelectorAll('.unit-tab').forEach(tab => {
                     tab.addEventListener('click', (e) => {
@@ -440,6 +626,15 @@
                     }
                 });
 
+                // Fullscreen button
+                chartDiv.querySelector('.fullscreen-btn')?.addEventListener('click', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                    if (activeTab) {
+                        this.openFullscreen(series, activeTab.dataset.unit, index, scaleCheckbox.checked);
+                    }
+                });
+
                 // Screenshot button
                 chartDiv.querySelector('.screenshot-btn')?.addEventListener('click', () => {
                     this.downloadScreenshot(chart, series.name);
@@ -452,31 +647,54 @@
             }
 
             renderChartForUnit(series, unit, chart, index) {
+                const chartType = this.chartTypes.get(series.name) || 'line';
                 const data = this.extractChartData(series, unit);
                 const shouldScale = this.shouldScaleChart(series.name);
-                const option = this.createChartOption(series, unit, data, index, shouldScale);
+
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                }
 
                 chart.setOption(option, true);
                 this.updateStatistics(series.name, data.values, unit);
-                this.setupChartClickHandler(chart, series.name, unit, data);
+
+                // Setup click handler for both chart types
+                if (chartType === 'line') {
+                    this.setupChartClickHandler(chart, series.name, unit, data);
+                } else if (chartType === 'boxplot') {
+                    this.setupBoxPlotClickHandler(chart, data);
+                }
             }
 
             extractChartData(series, unit) {
                 const plotData = [];
                 const commitHashes = [];
-                const values = [];
+                const allValues = []; // All individual values across all commits
+                const valuesByCommit = []; // Array of value arrays, one per commit
 
                 series.measurements.forEach(measurement => {
                     const metric = measurement.metrics.find(m => m.unit === unit);
-                    if (metric) {
+                    if (metric && metric.values) {
                         const shortHash = measurement.commit_hash.substring(0, 8);
-                        plotData.push([shortHash, metric.value]);
+
+                        // Calculate mean for line chart
+                        const mean = metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+
+                        plotData.push([shortHash, mean]);
                         commitHashes.push(measurement.commit_hash);
-                        values.push(metric.value);
+                        allValues.push(...metric.values); // Flatten all values for overall stats
+                        valuesByCommit.push({
+                            shortHash,
+                            fullHash: measurement.commit_hash,
+                            values: metric.values
+                        });
                     }
                 });
 
-                return { plotData, commitHashes, values };
+                return { plotData, commitHashes, values: allValues, valuesByCommit };
             }
 
             shouldScaleChart(seriesName) {
@@ -526,7 +744,16 @@
                     formatter: (params) => {
                         const currentValue = params.value[1];
                         const dataIndex = params.dataIndex;
-                        let tooltip = `Commit: ${params.name}<br/>Value: ${currentValue.toLocaleString()} ${unit}`;
+
+                        // Get the value count for this commit
+                        const commitData = data.valuesByCommit[dataIndex];
+                        const sampleCount = commitData ? commitData.values.length : 0;
+
+                        let tooltip = `Commit: ${params.name}<br/>Mean: ${currentValue.toLocaleString()} ${unit}`;
+
+                        if (sampleCount > 0) {
+                            tooltip += `<br/>Samples: ${sampleCount}`;
+                        }
 
                         if (dataIndex > 0) {
                             const previousValue = data.plotData[dataIndex - 1][1];
@@ -583,6 +810,133 @@
                 };
             }
 
+            // Helper to darken HSL color and add opacity
+            darkenColor(hslColor, amount) {
+                // Parse HSL color string like "hsl(221.2 83.2% 53.3%)"
+                const match = hslColor.match(/hsl\(([^)]+)\)/);
+                if (!match) return hslColor;
+
+                const parts = match[1].split(/\s+/);
+                const h = parseFloat(parts[0]);
+                const s = parseFloat(parts[1]);
+                const l = parseFloat(parts[2]);
+
+                // Reduce lightness by the specified amount (0-1) and add opacity
+                const newL = Math.max(0, l - (l * amount));
+
+                return `hsla(${h}, ${s}%, ${newL}%, 0.3)`;
+            }
+
+            // Calculate box-plot statistics (min, Q1, median, Q3, max)
+            calculateBoxPlotData(values) {
+                if (values.length === 0) return null;
+
+                const sorted = [...values].sort((a, b) => a - b);
+                const n = sorted.length;
+
+                const min = sorted[0];
+                const max = sorted[n - 1];
+
+                const median = n % 2 === 0
+                    ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+                    : sorted[Math.floor(n / 2)];
+
+                const q1Index = Math.floor(n * 0.25);
+                const q1 = sorted[q1Index];
+
+                const q3Index = Math.floor(n * 0.75);
+                const q3 = sorted[q3Index];
+
+                const iqr = q3 - q1;
+
+                return {
+                    boxData: [min, q1, median, q3, max],
+                    stats: { min, q1, median, q3, max, iqr }
+                };
+            }
+
+            createBoxPlotOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                // Create darker version of the color for box fill
+                const darkerColor = this.darkenColor(color, 0.3);
+
+                if (!data.valuesByCommit || data.valuesByCommit.length === 0) {
+                    return this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                // Calculate box-plot data for each commit
+                const commitLabels = [];
+                const boxPlotDataPoints = [];
+
+                data.valuesByCommit.forEach((commit, commitIndex) => {
+                    const boxData = this.calculateBoxPlotData(commit.values);
+                    if (boxData) {
+                        commitLabels.push(commit.shortHash);
+                        boxPlotDataPoints.push(boxData.boxData);
+                    }
+                });
+
+                return {
+                    animation: true,
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        formatter: (params) => {
+                            // ECharts boxplot data format: [index, min, Q1, median, Q3, max]
+                            const [_, min, q1, median, q3, max] = params.value;
+                            const commitHash = commitLabels[params.dataIndex];
+                            return `
+                                <strong>Commit: ${commitHash}</strong><br/>
+                                Max: ${max.toLocaleString()} ${unit}<br/>
+                                Q3: ${q3.toLocaleString()} ${unit}<br/>
+                                Median: ${median.toLocaleString()} ${unit}<br/>
+                                Q1: ${q1.toLocaleString()} ${unit}<br/>
+                                Min: ${min.toLocaleString()} ${unit}
+                            `;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commitLabels,
+                        axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontFamily: 'JetBrains Mono, monospace'
+                        }
+                    },
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [
+                        {
+                            name: series.name,
+                            type: 'boxplot',
+                            data: boxPlotDataPoints,
+                            itemStyle: {
+                                borderColor: color,
+                                borderWidth: 2,
+                                color: darkerColor
+                            },
+                            emphasis: {
+                                disabled: true
+                            }
+                        }
+                    ]
+                };
+            }
+
             setupChartClickHandler(chart, seriesName, unit, data) {
                 chart.off('click');
                 chart.on('click', (params) => {
@@ -591,6 +945,16 @@
                         if (!comparisonHandled) {
                             this.openCommitUrl(data.commitHashes[params.dataIndex]);
                         }
+                    }
+                });
+            }
+
+            setupBoxPlotClickHandler(chart, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.componentSubType === 'boxplot') {
+                        const commitHash = data.valuesByCommit[params.dataIndex].fullHash;
+                        this.openCommitUrl(commitHash);
                     }
                 });
             }
@@ -634,7 +998,7 @@
                 const formatValue = (value) => {
                     if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
                     if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
-                    return value.toLocaleString();
+                    return value.toLocaleString(undefined, {maximumFractionDigits: 2});
                 };
 
                 statsDiv.innerHTML = `
@@ -653,6 +1017,83 @@
                         </tbody>
                     </table>
                 `;
+            }
+
+            openFullscreen(series, unit, index, shouldScale) {
+                const modal = document.getElementById('chartModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalChart = document.getElementById('modalChart');
+                const modalClose = document.getElementById('modalClose');
+
+                // Set title
+                modalTitle.textContent = `${series.name} - ${unit}`;
+
+                // Show modal
+                modal.classList.add('active');
+
+                // Create chart in modal
+                const chartInstance = echarts.init(modalChart);
+
+                // Get current chart type
+                const chartType = this.chartTypes.get(series.name) || 'line';
+
+                // Extract data
+                const data = this.extractChartData(series, unit);
+
+                // Create option based on chart type
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                    this.setupBoxPlotClickHandler(chartInstance, data);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                    this.setupChartClickHandler(chartInstance, series.name, unit, data);
+                }
+
+                chartInstance.setOption(option);
+
+                // Handle close
+                const closeModal = () => {
+                    modal.classList.remove('active');
+                    chartInstance.dispose();
+                };
+
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
+
+                // Handle escape key
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+
+                // Resize chart when window resizes
+                const resizeHandler = () => {
+                    if (modal.classList.contains('active')) {
+                        chartInstance.resize();
+                    }
+                };
+                window.addEventListener('resize', resizeHandler);
+
+                // Clean up resize handler when modal closes
+                const originalClose = closeModal;
+                closeModal = () => {
+                    window.removeEventListener('resize', resizeHandler);
+                    originalClose();
+                };
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
             }
 
             downloadScreenshot(chart, chartName) {
@@ -773,7 +1214,7 @@
                 const state = { active: true, selectedPoints: [] };
                 this.comparisonState.set(chartName, state);
                 button.classList.add('active');
-                button.textContent = '❌ Cancel Compare';
+                button.textContent = '❌';
 
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);
@@ -784,7 +1225,7 @@
             exitComparisonMode(chartName, button) {
                 this.comparisonState.delete(chartName);
                 button.classList.remove('active');
-                button.textContent = '📊 Compare';
+                button.textContent = '📊';
 
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);

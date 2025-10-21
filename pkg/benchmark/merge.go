@@ -1,6 +1,8 @@
 package benchmark
 
-import "slices"
+import (
+	"slices"
+)
 
 func Merge(previous, current []Series) []Series {
 	var merged []Series
