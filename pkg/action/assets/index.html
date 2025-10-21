@@ -120,19 +120,19 @@
             letter-spacing: -0.025em;
         }
         .fullscreen-btn {
-            background: none;
-            border: none;
-            font-size: 18px;
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            font-size: 16px;
             cursor: pointer;
-            color: hsl(215.4 16.3% 46.9%);
-            padding: 4px 8px;
+            color: hsl(222.2 84% 4.9%);
+            padding: 6px 10px;
             border-radius: 4px;
             transition: all 0.2s ease;
             line-height: 1;
         }
         .fullscreen-btn:hover {
-            background: hsl(210 40% 95%);
-            color: hsl(222.2 84% 4.9%);
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
         }
         .unit-tab {
             background: hsl(0 0% 100%);
@@ -178,6 +178,16 @@
             gap: 8px;
             align-items: flex-end;
         }
+        .action-buttons-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .icon-buttons-group {
+            display: flex;
+            gap: 4px;
+        }
         .scale-checkbox {
             display: flex;
             align-items: center;
@@ -193,21 +203,20 @@
             cursor: pointer;
         }
         .action-button {
-            background: hsl(0 0% 100%);
+            background: hsl(210 40% 98%);
             border: 1px solid hsl(214.3 31.8% 91.4%);
-            border-radius: 6px;
-            padding: 6px 12px;
+            padding: 6px 10px;
             cursor: pointer;
-            font-size: 12px;
-            font-weight: 500;
+            font-size: 16px;
             color: hsl(222.2 84% 4.9%);
             transition: all 0.2s ease;
             display: flex;
             align-items: center;
-            gap: 4px;
+            border-radius: 4px;
+            line-height: 1;
         }
         .action-button:hover {
-            background: hsl(210 40% 98%);
+            background: hsl(0 0% 100%);
             border-color: hsl(217.2 32.6% 17.5%);
         }
         .action-button.active {
@@ -541,16 +550,16 @@
                                 <button class="chart-type-btn active" data-type="line">Line</button>
                                 <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
                             </div>
-                            <label class="scale-checkbox">
-                                <input type="checkbox" id="scale-${safeId}" checked>
-                                <span>Scale Y-axis</span>
-                            </label>
-                            <button class="action-button screenshot-btn" data-chart="${series.name}">
-                                📷 Save PNG
-                            </button>
-                            <button class="action-button compare-btn" data-chart="${series.name}">
-                                📊 Compare
-                            </button>
+                            <div class="action-buttons-row">
+                                <div class="icon-buttons-group">
+                                    <button class="action-button screenshot-btn" data-chart="${series.name}">📷</button>
+                                    <button class="action-button compare-btn" data-chart="${series.name}">📊</button>
+                                </div>
+                                <label class="scale-checkbox">
+                                    <input type="checkbox" id="scale-${safeId}" checked>
+                                    <span>Scale Y-axis</span>
+                                </label>
+                            </div>
                         </div>
                     </div>
                     <div class="comparison-info" id="comparison-${safeId}"></div>
@@ -1207,7 +1216,7 @@
                 const state = { active: true, selectedPoints: [] };
                 this.comparisonState.set(chartName, state);
                 button.classList.add('active');
-                button.textContent = '❌ Cancel Compare';
+                button.textContent = '❌';
 
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);
@@ -1218,7 +1227,7 @@
             exitComparisonMode(chartName, button) {
                 this.comparisonState.delete(chartName);
                 button.classList.remove('active');
-                button.textContent = '📊 Compare';
+                button.textContent = '📊';
 
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);
