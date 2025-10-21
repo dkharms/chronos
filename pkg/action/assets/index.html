@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chronos Benchmark Results</title>
+    <title>🕐 chronos</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
@@ -893,7 +893,8 @@
                             fontFamily: 'JetBrains Mono, monospace'
                         },
                         formatter: (params) => {
-                            const [min, q1, median, q3, max] = params.value;
+                            // ECharts boxplot data format: [index, min, Q1, median, Q3, max]
+                            const [_, min, q1, median, q3, max] = params.value;
                             const commitHash = commitLabels[params.dataIndex];
                             return `
                                 <strong>Commit: ${commitHash}</strong><br/>
