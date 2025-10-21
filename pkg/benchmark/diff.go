@@ -71,7 +71,7 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 
 		if idx >= 0 {
 			prevCommit = previous.CommitHash
-			prevValue = previous.Metrics[idx].Value
+			prevValue = mean(previous.Metrics[idx].Values)
 		}
 
 		diff = append(diff, MetricDiff{
@@ -81,9 +81,17 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 			CurrentCommit:  current.CommitHash,
 
 			PreviousValue: prevValue,
-			CurrentValue:  cm.Value,
+			CurrentValue:  mean(cm.Values),
 		})
 	}
 
 	return diff
+}
+
+func mean(s []float64) float64 {
+	var sum float64
+	for _, v := range s {
+		sum += v
+	}
+	return sum / float64(len(s))
 }

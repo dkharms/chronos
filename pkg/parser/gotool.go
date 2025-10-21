@@ -21,31 +21,31 @@ func NewGoParser(r io.Reader) *goparser {
 }
 
 func (p *goparser) Parse() (results []benchmark.Measurement) {
-	bname := make(map[string][]benchmark.Measurement)
-	br := benchfmt.NewReader(p.r, "benchmarks")
+	benchByName := make(map[string][]benchmark.Measurement)
+	benchReader := benchfmt.NewReader(p.r, "benchmarks")
 
-	for br.Scan() {
-		v, ok := br.Result().(*benchfmt.Result)
+	for benchReader.Scan() {
+		v, ok := benchReader.Result().(*benchfmt.Result)
 		if !ok {
 			continue
 		}
 
 		name := v.Name.String()
-		bname[name] = append(
-			bname[name],
+		benchByName[name] = append(
+			benchByName[name],
 			convert(*v.Clone()),
 		)
 	}
 
-	for name, bresults := range bname {
+	for benchName, benchResults := range benchByName {
 		// metrics maps unit to values
 		metrics := make(map[string][]float64)
 
-		for _, r := range bresults {
-			for _, m := range r.Metrics {
-				metrics[m.Unit] = append(
-					metrics[m.Unit],
-					m.Value,
+		for _, benchResult := range benchResults {
+			for _, metric := range benchResult.Metrics {
+				metrics[metric.Unit] = append(
+					metrics[metric.Unit],
+					metric.Values...,
 				)
 			}
 		}
@@ -63,7 +63,7 @@ func (p *goparser) Parse() (results []benchmark.Measurement) {
 		})
 
 		results = append(results, benchmark.Measurement{
-			Name:    name,
+			Name:    benchName,
 			Metrics: smetrics,
 		})
 	}
@@ -79,15 +79,15 @@ func convert(b benchfmt.Result) benchmark.Measurement {
 	r := benchmark.Measurement{
 		Name: b.Name.String(),
 		Metrics: []benchmark.Metric{{
-			Unit:  "iterations",
-			Value: float64(b.Iters),
+			Unit:   "iterations",
+			Values: []float64{float64(b.Iters)},
 		}},
 	}
 
 	for _, v := range b.Values {
 		r.Metrics = append(r.Metrics, benchmark.Metric{
-			Unit:  cmp.Or(v.OrigUnit, v.Unit),
-			Value: cmp.Or(v.OrigValue, v.Value),
+			Unit:   cmp.Or(v.OrigUnit, v.Unit),
+			Values: []float64{cmp.Or(v.OrigValue, v.Value)},
 		})
 	}
 

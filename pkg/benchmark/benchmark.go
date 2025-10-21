@@ -13,6 +13,5 @@ type Measurement struct {
 
 type Metric struct {
 	Unit   string    `json:"unit"`
-	Value  float64   `json:"value"`
 	Values []float64 `json:"values"`
 }

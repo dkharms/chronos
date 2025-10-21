@@ -1,6 +1,7 @@
 package benchmark
 
 import (
+	"slices"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -12,8 +13,8 @@ func TestMerge_SameBenchmarkSameCommit(t *testing.T) {
 		Measurements: []Measurement{{
 			CommitHash: "sha1:something",
 			Metrics: []Metric{{
-				Unit:  "ns/op",
-				Value: 1024,
+				Unit:   "ns/op",
+				Values: []float64{1024},
 			}},
 		}},
 	}
@@ -28,7 +29,6 @@ func TestMerge_SameBenchmarkSameCommit(t *testing.T) {
 				CommitHash: "sha1:something",
 				Metrics: []Metric{{
 					Unit:   "ns/op",
-					Value:  1024,
 					Values: []float64{1024},
 				}},
 			},
@@ -47,8 +47,8 @@ func TestMerge_SameBenchmarkDifferentCommit(t *testing.T) {
 		Measurements: []Measurement{{
 			CommitHash: "sha1:something",
 			Metrics: []Metric{{
-				Unit:  "ns/op",
-				Value: 1024,
+				Unit:   "ns/op",
+				Values: []float64{1024},
 			}},
 		}},
 	}
@@ -63,7 +63,6 @@ func TestMerge_SameBenchmarkDifferentCommit(t *testing.T) {
 				CommitHash: "sha1:something",
 				Metrics: []Metric{{
 					Unit:   "ns/op",
-					Value:  1024,
 					Values: []float64{1024},
 				}},
 			},
@@ -71,7 +70,6 @@ func TestMerge_SameBenchmarkDifferentCommit(t *testing.T) {
 				CommitHash: "sha2:something",
 				Metrics: []Metric{{
 					Unit:   "ns/op",
-					Value:  1024,
 					Values: []float64{1024},
 				}},
 			},
@@ -108,8 +106,8 @@ func deepCopyMetrics(in []Metric) []Metric {
 	var out []Metric
 	for _, m := range in {
 		out = append(out, Metric{
-			Unit:  m.Unit,
-			Value: m.Value,
+			Unit:   m.Unit,
+			Values: slices.Clone(m.Values),
 		})
 	}
 	return out
