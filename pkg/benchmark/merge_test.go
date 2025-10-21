@@ -27,8 +27,9 @@ func TestMerge_SameBenchmarkSameCommit(t *testing.T) {
 			{
 				CommitHash: "sha1:something",
 				Metrics: []Metric{{
-					Unit:  "ns/op",
-					Value: 1024,
+					Unit:   "ns/op",
+					Value:  1024,
+					Values: []float64{1024},
 				}},
 			},
 		},
@@ -61,15 +62,17 @@ func TestMerge_SameBenchmarkDifferentCommit(t *testing.T) {
 			{
 				CommitHash: "sha1:something",
 				Metrics: []Metric{{
-					Unit:  "ns/op",
-					Value: 1024,
+					Unit:   "ns/op",
+					Value:  1024,
+					Values: []float64{1024},
 				}},
 			},
 			{
 				CommitHash: "sha2:something",
 				Metrics: []Metric{{
-					Unit:  "ns/op",
-					Value: 1024,
+					Unit:   "ns/op",
+					Value:  1024,
+					Values: []float64{1024},
 				}},
 			},
 		},

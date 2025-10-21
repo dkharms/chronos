@@ -1,6 +1,8 @@
 package benchmark
 
-import "slices"
+import (
+	"slices"
+)
 
 func Merge(previous, current []Series) []Series {
 	var merged []Series
@@ -40,6 +42,18 @@ func Merge(previous, current []Series) []Series {
 		}
 
 		previous.Measurements = append(previous.Measurements, unique...)
+
+		// TODO(dkharms): This is done for backwards compatibility, since
+		// now I store multiple values for one unit. So with next release I must remove this code.
+		for i, measurement := range previous.Measurements {
+			for j, metric := range measurement.Metrics {
+				if len(metric.Values) == 0 {
+					metric.Values = append(metric.Values, metric.Value)
+				}
+				previous.Measurements[i].Metrics[j] = metric
+			}
+		}
+
 		merged = append(merged, previous)
 	}
 
