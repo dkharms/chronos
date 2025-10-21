@@ -194,6 +194,33 @@
             color: hsl(0 0% 100%);
             border-color: hsl(221.2 83.2% 53.3%);
         }
+        .chart-type-toggle {
+            display: flex;
+            gap: 4px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 2px;
+            background: hsl(210 40% 98%);
+        }
+        .chart-type-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(215.4 16.3% 46.9%);
+            transition: all 0.2s ease;
+        }
+        .chart-type-btn:hover {
+            color: hsl(222.2 84% 4.9%);
+        }
+        .chart-type-btn.active {
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+        }
         .comparison-info {
             margin-top: 12px;
             padding: 12px;
@@ -276,7 +303,350 @@
 
     <script>
         // Benchmark data will be injected here by the Go application
-        window.BENCHMARK_DATA = {{.BenchmarkData}};
+        // window.BENCHMARK_DATA = {{.BenchmarkData}};
+
+        // Sample data for testing - NEW FORMAT with multiple values per metric
+        window.BENCHMARK_DATA = [
+            {
+                "name": "BenchmarkHashMap",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1250, 1280, 1220, 1245, 1265, 1230, 1255, 1240, 1270, 1235]},
+                            {"unit": "B/op", "values": [512, 512, 512, 512, 512, 512, 512, 512, 512, 512]},
+                            {"unit": "allocs/op", "values": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1180, 1195, 1170, 1185, 1175, 1190, 1182, 1188, 1177, 1183]},
+                            {"unit": "B/op", "values": [512, 512, 512, 512, 512, 512, 512, 512, 512, 512]},
+                            {"unit": "allocs/op", "values": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1120, 1135, 1125, 1130, 1128, 1122, 1140, 1118, 1132, 1126]},
+                            {"unit": "B/op", "values": [512, 512, 512, 512, 512, 512, 512, 512, 512, 512]},
+                            {"unit": "allocs/op", "values": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1050, 1065, 1055, 1048, 1060, 1052, 1058, 1054, 1062, 1056]},
+                            {"unit": "B/op", "values": [512, 512, 512, 512, 512, 512, 512, 512, 512, 512]},
+                            {"unit": "allocs/op", "values": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1045, 1050, 1042, 1048, 1052, 1046, 1049, 1044, 1051, 1047]},
+                            {"unit": "B/op", "values": [512, 512, 512, 512, 512, 512, 512, 512, 512, 512]},
+                            {"unit": "allocs/op", "values": [8, 8, 8, 8, 8, 8, 8, 8, 8, 8]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkJSONParsing",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [45000, 46200, 44800, 45500, 45300, 44900, 45800, 45100, 45400, 45200]},
+                            {"unit": "B/op", "values": [8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192]},
+                            {"unit": "allocs/op", "values": [45, 45, 45, 45, 45, 45, 45, 45, 45, 45]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [43500, 44100, 43200, 43800, 43600, 43400, 43900, 43300, 43700, 43500]},
+                            {"unit": "B/op", "values": [8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192, 8192]},
+                            {"unit": "allocs/op", "values": [45, 45, 45, 45, 45, 45, 45, 45, 45, 45]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [41200, 41800, 40900, 41500, 41300, 41100, 41600, 41000, 41400, 41200]},
+                            {"unit": "B/op", "values": [7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680]},
+                            {"unit": "allocs/op", "values": [42, 42, 42, 42, 42, 42, 42, 42, 42, 42]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [39800, 40200, 39500, 40000, 39900, 39700, 40100, 39600, 40050, 39850]},
+                            {"unit": "B/op", "values": [7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680]},
+                            {"unit": "allocs/op", "values": [42, 42, 42, 42, 42, 42, 42, 42, 42, 42]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [38200, 38500, 38000, 38300, 38400, 38100, 38450, 38150, 38350, 38250]},
+                            {"unit": "B/op", "values": [7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680, 7680]},
+                            {"unit": "allocs/op", "values": [42, 42, 42, 42, 42, 42, 42, 42, 42, 42]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkStringConcat",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [850, 870, 840, 860, 855, 845, 865, 850, 858, 852]},
+                            {"unit": "B/op", "values": [256, 256, 256, 256, 256, 256, 256, 256, 256, 256]},
+                            {"unit": "allocs/op", "values": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [820, 835, 815, 828, 822, 818, 830, 825, 823, 826]},
+                            {"unit": "B/op", "values": [256, 256, 256, 256, 256, 256, 256, 256, 256, 256]},
+                            {"unit": "allocs/op", "values": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [780, 795, 775, 788, 782, 778, 790, 785, 783, 786, 1200]},
+                            {"unit": "B/op", "values": [256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256]},
+                            {"unit": "allocs/op", "values": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [770, 780, 765, 775, 772, 768, 778, 773, 776, 774]},
+                            {"unit": "B/op", "values": [256, 256, 256, 256, 256, 256, 256, 256, 256, 256]},
+                            {"unit": "allocs/op", "values": [4, 4, 4, 4, 4, 4, 4, 4, 4, 4]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkDatabaseQuery",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [2500000, 2580000, 2450000, 2520000, 2490000, 2550000, 2480000, 2530000, 2510000, 2470000]},
+                            {"unit": "B/op", "values": [65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536]},
+                            {"unit": "allocs/op", "values": [125, 125, 125, 125, 125, 125, 125, 125, 125, 125]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [2200000, 2250000, 2180000, 2220000, 2210000, 2190000, 2240000, 2200000, 2230000, 2205000]},
+                            {"unit": "B/op", "values": [65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536, 65536]},
+                            {"unit": "allocs/op", "values": [125, 125, 125, 125, 125, 125, 125, 125, 125, 125]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1950000, 1980000, 1930000, 1960000, 1945000, 1970000, 1940000, 1955000, 1965000, 1950000]},
+                            {"unit": "B/op", "values": [49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152]},
+                            {"unit": "allocs/op", "values": [98, 98, 98, 98, 98, 98, 98, 98, 98, 98]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1850000, 1870000, 1840000, 1860000, 1855000, 1845000, 1865000, 1850000, 1858000, 1852000]},
+                            {"unit": "B/op", "values": [49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152]},
+                            {"unit": "allocs/op", "values": [98, 98, 98, 98, 98, 98, 98, 98, 98, 98]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1820000, 1840000, 1810000, 1830000, 1825000, 1815000, 1835000, 1820000, 1828000, 1822000]},
+                            {"unit": "B/op", "values": [49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152]},
+                            {"unit": "allocs/op", "values": [98, 98, 98, 98, 98, 98, 98, 98, 98, 98]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [1800000, 1815000, 1795000, 1808000, 1802000, 1798000, 1812000, 1805000, 1810000, 1803000]},
+                            {"unit": "B/op", "values": [49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152, 49152]},
+                            {"unit": "allocs/op", "values": [98, 98, 98, 98, 98, 98, 98, 98, 98, 98]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkRegex",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [5200, 5350, 5180, 5280, 5220, 5190, 5310, 5240, 5270, 5205]},
+                            {"unit": "B/op", "values": [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024]},
+                            {"unit": "allocs/op", "values": [18, 18, 18, 18, 18, 18, 18, 18, 18, 18]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [5100, 5240, 5080, 5180, 5120, 5090, 5210, 5140, 5170, 5105]},
+                            {"unit": "B/op", "values": [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024]},
+                            {"unit": "allocs/op", "values": [18, 18, 18, 18, 18, 18, 18, 18, 18, 18]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [4950, 5080, 4920, 5020, 4980, 4940, 5050, 4990, 5010, 4965]},
+                            {"unit": "B/op", "values": [1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024, 1024]},
+                            {"unit": "allocs/op", "values": [18, 18, 18, 18, 18, 18, 18, 18, 18, 18]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [3200, 3280, 3180, 3240, 3210, 3190, 3260, 3220, 3230, 3205]},
+                            {"unit": "B/op", "values": [768, 768, 768, 768, 768, 768, 768, 768, 768, 768]},
+                            {"unit": "allocs/op", "values": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [3150, 3220, 3130, 3190, 3160, 3140, 3210, 3170, 3180, 3155]},
+                            {"unit": "B/op", "values": [768, 768, 768, 768, 768, 768, 768, 768, 768, 768]},
+                            {"unit": "allocs/op", "values": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [3120, 3180, 3100, 3150, 3130, 3110, 3170, 3140, 3155, 3125]},
+                            {"unit": "B/op", "values": [768, 768, 768, 768, 768, 768, 768, 768, 768, 768]},
+                            {"unit": "allocs/op", "values": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [3100, 3160, 3080, 3130, 3110, 3090, 3150, 3120, 3135, 3105]},
+                            {"unit": "B/op", "values": [768, 768, 768, 768, 768, 768, 768, 768, 768, 768]},
+                            {"unit": "allocs/op", "values": [12, 12, 12, 12, 12, 12, 12, 12, 12, 12]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkCrypto",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [125000, 128000, 123000, 126500, 124500, 127000, 125500, 126000, 124000, 125200]},
+                            {"unit": "B/op", "values": [4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096]},
+                            {"unit": "allocs/op", "values": [32, 32, 32, 32, 32, 32, 32, 32, 32, 32]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [122000, 125000, 120000, 123500, 121500, 124000, 122500, 123000, 121000, 122200]},
+                            {"unit": "B/op", "values": [4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096]},
+                            {"unit": "allocs/op", "values": [32, 32, 32, 32, 32, 32, 32, 32, 32, 32]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [120000, 122500, 118000, 121000, 119500, 121500, 120500, 121200, 119000, 120100]},
+                            {"unit": "B/op", "values": [4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096]},
+                            {"unit": "allocs/op", "values": [32, 32, 32, 32, 32, 32, 32, 32, 32, 32]}
+                        ]
+                    }
+                ]
+            },
+            {
+                "name": "BenchmarkMemcpy",
+                "measurements": [
+                    {
+                        "commit_hash": "a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [450, 465, 445, 458, 452, 448, 462, 455, 460, 451]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [445, 460, 440, 453, 447, 443, 457, 450, 455, 446]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [350, 365, 345, 358, 352, 348, 362, 355, 360, 351]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [345, 358, 342, 352, 347, 343, 355, 349, 354, 346]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [342, 355, 339, 349, 344, 340, 352, 346, 351, 343]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [340, 353, 337, 347, 342, 338, 350, 344, 349, 341]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [338, 350, 335, 345, 340, 336, 348, 342, 347, 339]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    },
+                    {
+                        "commit_hash": "h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3",
+                        "metrics": [
+                            {"unit": "ns/op", "values": [335, 348, 332, 342, 337, 333, 345, 339, 344, 336]},
+                            {"unit": "B/op", "values": [2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048, 2048]},
+                            {"unit": "allocs/op", "values": [2, 2, 2, 2, 2, 2, 2, 2, 2, 2]}
+                        ]
+                    }
+                ]
+            }
+        ];
 
         class BenchmarkVisualizer {
             constructor() {
@@ -284,6 +654,7 @@
                 this.filteredData = [];
                 this.charts = new Map();
                 this.comparisonState = new Map();
+                this.chartTypes = new Map(); // Track chart type per series (line or boxplot)
                 this.colors = [
                     'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
                     'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
@@ -391,6 +762,10 @@
                     <div class="tab-container">
                         <div class="tabs-group">${tabsHtml}</div>
                         <div class="buttons-group">
+                            <div class="chart-type-toggle">
+                                <button class="chart-type-btn active" data-type="line">Line</button>
+                                <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
+                            </div>
                             <label class="scale-checkbox">
                                 <input type="checkbox" id="scale-${safeId}" checked>
                                 <span>Scale Y-axis</span>
@@ -422,6 +797,36 @@
             setupChartEventListeners(chartDiv, series, chart, index) {
                 const safeId = this.createSafeId(series.name);
 
+                // Chart type toggle
+                chartDiv.querySelectorAll('.chart-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const chartType = e.target.dataset.type;
+                        this.chartTypes.set(series.name, chartType);
+
+                        // Exit comparison mode when switching chart types
+                        const compareBtn = chartDiv.querySelector('.compare-btn');
+                        if (this.comparisonState.has(series.name)) {
+                            this.exitComparisonMode(series.name, compareBtn);
+                        }
+
+                        // Update compare button visibility (disable for boxplot)
+                        if (chartType === 'boxplot') {
+                            compareBtn.style.opacity = '0.5';
+                            compareBtn.style.pointerEvents = 'none';
+                        } else {
+                            compareBtn.style.opacity = '1';
+                            compareBtn.style.pointerEvents = 'auto';
+                        }
+
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                        }
+                    });
+                });
+
                 // Unit tabs
                 chartDiv.querySelectorAll('.unit-tab').forEach(tab => {
                     tab.addEventListener('click', (e) => {
@@ -452,31 +857,54 @@
             }
 
             renderChartForUnit(series, unit, chart, index) {
+                const chartType = this.chartTypes.get(series.name) || 'line';
                 const data = this.extractChartData(series, unit);
                 const shouldScale = this.shouldScaleChart(series.name);
-                const option = this.createChartOption(series, unit, data, index, shouldScale);
+
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                }
 
                 chart.setOption(option, true);
                 this.updateStatistics(series.name, data.values, unit);
-                this.setupChartClickHandler(chart, series.name, unit, data);
+
+                // Setup click handler for both chart types
+                if (chartType === 'line') {
+                    this.setupChartClickHandler(chart, series.name, unit, data);
+                } else if (chartType === 'boxplot') {
+                    this.setupBoxPlotClickHandler(chart, data);
+                }
             }
 
             extractChartData(series, unit) {
                 const plotData = [];
                 const commitHashes = [];
-                const values = [];
+                const allValues = []; // All individual values across all commits
+                const valuesByCommit = []; // Array of value arrays, one per commit
 
                 series.measurements.forEach(measurement => {
                     const metric = measurement.metrics.find(m => m.unit === unit);
-                    if (metric) {
+                    if (metric && metric.values) {
                         const shortHash = measurement.commit_hash.substring(0, 8);
-                        plotData.push([shortHash, metric.value]);
+
+                        // Calculate mean for line chart
+                        const mean = metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+
+                        plotData.push([shortHash, mean]);
                         commitHashes.push(measurement.commit_hash);
-                        values.push(metric.value);
+                        allValues.push(...metric.values); // Flatten all values for overall stats
+                        valuesByCommit.push({
+                            shortHash,
+                            fullHash: measurement.commit_hash,
+                            values: metric.values
+                        });
                     }
                 });
 
-                return { plotData, commitHashes, values };
+                return { plotData, commitHashes, values: allValues, valuesByCommit };
             }
 
             shouldScaleChart(seriesName) {
@@ -526,7 +954,16 @@
                     formatter: (params) => {
                         const currentValue = params.value[1];
                         const dataIndex = params.dataIndex;
-                        let tooltip = `Commit: ${params.name}<br/>Value: ${currentValue.toLocaleString()} ${unit}`;
+
+                        // Get the value count for this commit
+                        const commitData = data.valuesByCommit[dataIndex];
+                        const sampleCount = commitData ? commitData.values.length : 0;
+
+                        let tooltip = `Commit: ${params.name}<br/>Mean: ${currentValue.toLocaleString()} ${unit}`;
+
+                        if (sampleCount > 0) {
+                            tooltip += `<br/>Samples: ${sampleCount}`;
+                        }
 
                         if (dataIndex > 0) {
                             const previousValue = data.plotData[dataIndex - 1][1];
@@ -583,6 +1020,132 @@
                 };
             }
 
+            // Helper to darken HSL color
+            darkenColor(hslColor, amount) {
+                // Parse HSL color string like "hsl(221.2 83.2% 53.3%)"
+                const match = hslColor.match(/hsl\(([^)]+)\)/);
+                if (!match) return hslColor;
+
+                const parts = match[1].split(/\s+/);
+                const h = parseFloat(parts[0]);
+                const s = parseFloat(parts[1]);
+                const l = parseFloat(parts[2]);
+
+                // Reduce lightness by the specified amount (0-1)
+                const newL = Math.max(0, l - (l * amount));
+
+                return `hsl(${h} ${s}% ${newL}%)`;
+            }
+
+            // Calculate box-plot statistics (min, Q1, median, Q3, max)
+            calculateBoxPlotData(values) {
+                if (values.length === 0) return null;
+
+                const sorted = [...values].sort((a, b) => a - b);
+                const n = sorted.length;
+
+                const min = sorted[0];
+                const max = sorted[n - 1];
+
+                const median = n % 2 === 0
+                    ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+                    : sorted[Math.floor(n / 2)];
+
+                const q1Index = Math.floor(n * 0.25);
+                const q1 = sorted[q1Index];
+
+                const q3Index = Math.floor(n * 0.75);
+                const q3 = sorted[q3Index];
+
+                const iqr = q3 - q1;
+
+                return {
+                    boxData: [min, q1, median, q3, max],
+                    stats: { min, q1, median, q3, max, iqr }
+                };
+            }
+
+            createBoxPlotOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                // Create darker version of the color for box fill
+                const darkerColor = this.darkenColor(color, 0.3);
+
+                if (!data.valuesByCommit || data.valuesByCommit.length === 0) {
+                    return this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                // Calculate box-plot data for each commit
+                const commitLabels = [];
+                const boxPlotDataPoints = [];
+
+                data.valuesByCommit.forEach((commit, commitIndex) => {
+                    const boxData = this.calculateBoxPlotData(commit.values);
+                    if (boxData) {
+                        commitLabels.push(commit.shortHash);
+                        boxPlotDataPoints.push(boxData.boxData);
+                    }
+                });
+
+                return {
+                    animation: true,
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        formatter: (params) => {
+                            const [min, q1, median, q3, max] = params.value;
+                            const commitHash = commitLabels[params.dataIndex];
+                            return `
+                                <strong>Commit: ${commitHash}</strong><br/>
+                                Max: ${max.toLocaleString()} ${unit}<br/>
+                                Q3: ${q3.toLocaleString()} ${unit}<br/>
+                                Median: ${median.toLocaleString()} ${unit}<br/>
+                                Q1: ${q1.toLocaleString()} ${unit}<br/>
+                                Min: ${min.toLocaleString()} ${unit}
+                            `;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commitLabels,
+                        axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontFamily: 'JetBrains Mono, monospace'
+                        }
+                    },
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [
+                        {
+                            name: series.name,
+                            type: 'boxplot',
+                            data: boxPlotDataPoints,
+                            itemStyle: {
+                                borderColor: color,
+                                borderWidth: 2,
+                                color: darkerColor
+                            },
+                            emphasis: {
+                                disabled: true
+                            }
+                        }
+                    ]
+                };
+            }
+
             setupChartClickHandler(chart, seriesName, unit, data) {
                 chart.off('click');
                 chart.on('click', (params) => {
@@ -591,6 +1154,16 @@
                         if (!comparisonHandled) {
                             this.openCommitUrl(data.commitHashes[params.dataIndex]);
                         }
+                    }
+                });
+            }
+
+            setupBoxPlotClickHandler(chart, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.componentSubType === 'boxplot') {
+                        const commitHash = data.valuesByCommit[params.dataIndex].fullHash;
+                        this.openCommitUrl(commitHash);
                     }
                 });
             }
@@ -634,7 +1207,7 @@
                 const formatValue = (value) => {
                     if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
                     if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
-                    return value.toLocaleString();
+                    return value.toLocaleString(undefined, {maximumFractionDigits: 2});
                 };
 
                 statsDiv.innerHTML = `
