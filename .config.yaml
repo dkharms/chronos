@@ -1,8 +1,8 @@
 github_pages:
-  path: benchmarks
+  directory: benchmarks
 
 storage:
-  measurements_capacity: 5
+  measurements_capacity: 10
 
 units:
   - name: allocs/op
@@ -11,12 +11,12 @@ units:
 
   - name: B/op
     better: lower
-    threshold: 0.1
+    threshold: 0.05
 
   - name: ns/op
     better: lower
-    threshold: 0.1
+    threshold: 0.05
 
   - name: iterations
     better: higher
-    threshold: 0.1
+    threshold: 0.05
