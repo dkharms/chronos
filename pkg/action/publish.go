@@ -53,7 +53,7 @@ func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) 
 	return r.WithBranch(
 		ctx, cfg.GithubPages.Branch,
 		func() ([]string, string, error) {
-			p := filepath.Join(cfg.GithubPages.Path, "index.html")
+			p := filepath.Join(cfg.GithubPages.Directory, "index.html")
 			return []string{p},
 				fmt.Sprintf(ActionPublishCommitMessage, input.CommitHash),
 				saveIndexFile(p, series)

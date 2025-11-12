@@ -51,7 +51,7 @@ func processBenchmarks(cfg Config, gctx Input) error {
 		merged[i].Measurements = merged[i].Measurements[:trim]
 	}
 
-	return saveMergedBenchmarks(benchmark.Merge(collected, incoming))
+	return saveMergedBenchmarks(merged)
 }
 
 func loadCollectedBenchmarks(path string) ([]benchmark.Series, error) {
