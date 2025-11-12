@@ -12,43 +12,35 @@ const (
 	repoTpl = "https://x-access-token:%s@github.com/%s/%s.git"
 )
 
-func WithTransient(
+func WithRepository(
 	ctx context.Context,
 	token, owner, repositoryName string,
-	fn func(context.Context, Repository) error,
-) error {
+) (Repository, error) {
 	tmp, err := os.MkdirTemp(os.TempDir(), "chronos-*")
 	if err != nil {
-		return err
+		return Repository{}, err
 	}
 
 	repository, err := git.PlainCloneContext(ctx, tmp, &git.CloneOptions{
 		URL: fmt.Sprintf(repoTpl, token, owner, repositoryName),
 	})
 	if err != nil {
-		return err
+		return Repository{}, err
 	}
-	defer func() { _ = os.RemoveAll(tmp) }()
+
+	if err := os.Chdir(tmp); err != nil {
+		return Repository{}, err
+	}
 
 	worktree, err := repository.Worktree()
 	if err != nil {
-		return err
+		return Repository{}, err
 	}
 
-	dir, err := os.Getwd()
-	if err != nil {
-		return err
-	}
-	defer func() { _ = os.Chdir(dir) }()
-
-	if err := os.Chdir(tmp); err != nil {
-		return err
-	}
-
-	return fn(ctx, Repository{
+	return Repository{
 		r: repository,
 		w: worktree,
-	})
+	}, nil
 }
 
 type Repository struct {
@@ -64,7 +56,7 @@ func (r Repository) WithBranch(
 	if err != nil {
 		return err
 	}
-	defer func() { _ = Checkout(r.w, cur.String()) }()
+	defer func(branch string) { _ = Checkout(r.w, branch) }(cur.String())
 
 	if err := Fetch(ctx, r.r, branch); err != nil {
 		return err

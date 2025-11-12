@@ -21,10 +21,31 @@ type MetricDiff struct {
 }
 
 func (m MetricDiff) Ratio() float64 {
-	if math.IsNaN(m.PreviousValue) || m.PreviousValue == 0 || math.IsNaN(m.CurrentValue) {
+	nan := m.PreviousValue == 0 ||
+		math.IsNaN(m.PreviousValue) ||
+		math.IsNaN(m.CurrentValue)
+
+	if nan {
 		return math.NaN()
 	}
+
 	return m.CurrentValue / m.PreviousValue
+}
+
+func (m MetricDiff) Emoji() string {
+	if d, ok := GetMetricDescriptor(m.Unit); ok {
+		switch d.Comparator(m.PreviousValue, m.CurrentValue) {
+		case CompareVerdictBetter:
+			return "🟢"
+		case CompareVerdictWorse:
+			return "🔴"
+		case CompareVerdictSame:
+			return "🟰"
+		default:
+			panic("unknown compare verdict")
+		}
+	}
+	return "❓"
 }
 
 func Diff(previous, current []Series) []CalculatedDiff {
@@ -59,7 +80,7 @@ func Diff(previous, current []Series) []CalculatedDiff {
 
 func metricDiff(previous, current Measurement) []MetricDiff {
 	var (
-		prevCommit = "------"
+		prevCommit = "------" // Exactly 6 symbols
 		prevValue  = math.NaN()
 		diff       []MetricDiff
 	)

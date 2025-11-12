@@ -20,48 +20,41 @@ const (
 	ActionSaveCommitMessage = "[chronos] `save` (%s)"
 )
 
-func Save(gctx Context) error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		ActionSaveTimeout,
-	)
-
-	defer cancel()
-
-	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner, gctx.Repository,
-		func(ctx context.Context, r gitops.Repository) error {
-			return r.WithBranch(
-				ctx, gctx.BranchStorage,
-				func() ([]string, string, error) {
-					return []string{ChronosMergedFilename},
-						fmt.Sprintf(ActionSaveCommitMessage, gctx.CommitHash),
-						ProcessBenchmarks(gctx)
-				},
-			)
+func Save(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
+	return r.WithBranch(
+		ctx, input.BranchStorage,
+		func() ([]string, string, error) {
+			return []string{ChronosMergedFilename},
+				fmt.Sprintf(ActionSaveCommitMessage, input.CommitHash),
+				processBenchmarks(cfg, input)
 		},
 	)
 }
 
-func ProcessBenchmarks(gctx Context) error {
-	collected, err := loadBenchmarksSeries(ChronosMergedFilename)
+func processBenchmarks(cfg Config, gctx Input) error {
+	collected, err := loadCollectedBenchmarks(ChronosMergedFilename)
 	if err != nil {
 		return err
 	}
 
-	incoming, err := parseBenchmarkSeries(gctx.CommitHash, gctx.InputFilepath)
+	incoming, err := loadIncomingBenchmarks(gctx.CommitHash, gctx.BenchmarksFilepath)
 	if err != nil {
 		return err
 	}
 
-	if err := saveMergedBenchmarks(benchmark.Merge(collected, incoming)); err != nil {
-		return err
+	merged := benchmark.Merge(collected, incoming)
+	for i := range len(merged) {
+		trim := min(
+			len(merged[i].Measurements),
+			cfg.Storage.MeasurementsCapacity,
+		)
+		merged[i].Measurements = merged[i].Measurements[:trim]
 	}
 
-	return nil
+	return saveMergedBenchmarks(benchmark.Merge(collected, incoming))
 }
 
-func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
+func loadCollectedBenchmarks(path string) ([]benchmark.Series, error) {
 	f, err := os.OpenFile(path, os.O_CREATE|os.O_RDONLY, 0o644)
 	if err != nil {
 		return nil, err
@@ -78,7 +71,7 @@ func loadBenchmarksSeries(path string) ([]benchmark.Series, error) {
 	return series, nil
 }
 
-func parseBenchmarkSeries(commitHash, path string) ([]benchmark.Series, error) {
+func loadIncomingBenchmarks(commitHash, path string) ([]benchmark.Series, error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0o644)
 	if err != nil {
 		return nil, err

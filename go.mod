@@ -4,6 +4,7 @@ go 1.25.1
 
 require (
 	github.com/go-git/go-git/v6 v6.0.0-20250925222256-3c570d28a60c
+	github.com/kkyr/fig v0.5.0
 	github.com/sethvargo/go-githubactions v1.3.1
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/perf v0.0.0-20250909190841-7e13e04d9366
@@ -22,6 +23,8 @@ require (
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
+	github.com/mitchellh/mapstructure v1.5.0 // indirect
+	github.com/pelletier/go-toml/v2 v2.1.0 // indirect
 	github.com/pjbgf/sha1cd v0.5.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sergi/go-diff v1.4.0 // indirect
