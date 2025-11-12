@@ -2,8 +2,8 @@ package action
 
 type Config struct {
 	GithubPages struct {
-		Branch string `fig:"branch" default:"gh-pages"`
-		Path   string `fig:"path" default:"/"`
+		Branch    string `fig:"branch" default:"gh-pages"`
+		Directory string `fig:"directory" default:"chronos"`
 	} `fig:"github_pages"`
 
 	Storage struct {
