@@ -2,6 +2,7 @@ package git
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -12,9 +13,15 @@ import (
 )
 
 func Fetch(ctx context.Context, repo *git.Repository, branch string) error {
-	return repo.FetchContext(ctx, &git.FetchOptions{
+	err := repo.FetchContext(ctx, &git.FetchOptions{
 		RefSpecs: []config.RefSpec{config.RefSpec(branch + ":" + branch)},
 	})
+
+	if err == nil || errors.Is(err, git.NoErrAlreadyUpToDate) {
+		return nil
+	}
+
+	return err
 }
 
 func Checkout(worktree *git.Worktree, branch string) error {
