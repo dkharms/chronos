@@ -1,5 +1,5 @@
 github_pages:
-  path: /benchmarks
+  path: benchmarks
 
 storage:
   measurements_capacity: 5
