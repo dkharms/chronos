@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕐 chronos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        body {
+            margin: 0;
+            padding: 24px max(24px, 5%);
+            background-color: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        h1 {
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 30px;
+            letter-spacing: -0.025em;
+        }
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 8px 0;
+        }
+        .filter-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 280px;
+            max-width: 400px;
+        }
+        .filter-icon {
+            position: absolute;
+            left: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .filter-label {
+            font-weight: 500;
+            font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
+            white-space: nowrap;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 8px 40px 8px 40px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            font-size: 14px;
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: hsl(221.2 83.2% 53.3%);
+            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.1);
+        }
+        .filter-input:not(:placeholder-shown) + .clear-button {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .clear-button {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        .clear-button:hover {
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 550px), 1fr));
+            gap: 24px;
+        }
+        .chart-card {
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            padding: 24px;
+            background: hsl(0 0% 100%);
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            padding-bottom: 12px;
+        }
+        .chart-title {
+            margin: 0;
+            color: hsl(222.2 84% 4.9%);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+        .fullscreen-btn {
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            font-size: 16px;
+            cursor: pointer;
+            color: hsl(222.2 84% 4.9%);
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .fullscreen-btn:hover {
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .unit-tab {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            display: inline-block;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+        }
+        .unit-tab:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .unit-tab.active {
+            background: hsl(222.2 47.4% 11.2%);
+            color: hsl(210 40% 98%);
+            border-color: hsl(222.2 47.4% 11.2%);
+        }
+        .tab-container {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .tabs-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .action-buttons-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .icon-buttons-group {
+            display: flex;
+            gap: 4px;
+        }
+        .scale-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            user-select: none;
+        }
+        .scale-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+        .action-button {
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .action-button:hover {
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .action-button.active {
+            background: hsl(221.2 83.2% 53.3%);
+            color: hsl(0 0% 100%);
+            border-color: hsl(221.2 83.2% 53.3%);
+        }
+        .chart-type-toggle {
+            display: flex;
+            gap: 4px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 2px;
+            background: hsl(210 40% 98%);
+        }
+        .chart-type-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(215.4 16.3% 46.9%);
+            transition: all 0.2s ease;
+        }
+        .chart-type-btn:hover {
+            color: hsl(222.2 84% 4.9%);
+        }
+        .chart-type-btn.active {
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+        }
+        .comparison-info {
+            margin-top: 12px;
+            padding: 12px;
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: hsl(0 0% 0% / 0.8);
+            animation: fadeIn 0.2s ease;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: hsl(0 0% 100%);
+            border-radius: 8px;
+            width: 95%;
+            height: 90%;
+            max-width: 1800px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: hsl(222.2 84% 4.9%);
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: hsl(215.4 16.3% 46.9%);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
+        }
+        .modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+        }
+        .modal-chart {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .chart-wrapper {
+            width: 100%;
+            height: 350px;
+        }
+        .stats-info {
+            margin-top: 0px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            color: hsl(222.2 84% 4.9%);
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .stats-table th,
+        .stats-table td {
+            padding: 8px 12px;
+            text-align: center;
+            border-right: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        .stats-table th:last-child,
+        .stats-table td:last-child {
+            border-right: none;
+        }
+        .stats-table th {
+            background: hsl(210 40% 98%);
+            font-weight: 600;
+            font-size: 11px;
+            color: hsl(215.4 16.3% 46.9%);
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        .stats-table td {
+            font-weight: 500;
+        }
+        .no-results {
+            text-align: center;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 14px;
+            padding: 48px;
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 48px;
+            font-size: 14px;
+            color: hsl(215.4 16.3% 46.9%);
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="filter-section">
+            <span class="filter-label">Filter benchmarks:</span>
+            <div class="filter-wrapper">
+                <span class="filter-icon">🔍</span>
+                <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type here...">
+                <button id="clearFilter" class="clear-button">✕</button>
+            </div>
+        </div>
+
+        <div id="chartsContainer" class="charts-container">
+            <div class="loading">Loading benchmark data...</div>
+        </div>
+
+        <div id="chartModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalTitle"></h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalChart" class="modal-chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        window.BENCHMARK_DATA = [{"name":"BubbleSort/length=1024-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[1929]},{"unit":"ns/op","values":[619180]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[1934]},{"unit":"ns/op","values":[617533]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[1767]},{"unit":"ns/op","values":[683772]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[1953]},{"unit":"ns/op","values":[618369]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[1921]},{"unit":"ns/op","values":[616630]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=128-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[61236]},{"unit":"ns/op","values":[19448]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[54714]},{"unit":"ns/op","values":[19852]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[50016]},{"unit":"ns/op","values":[23003]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[55792]},{"unit":"ns/op","values":[19407]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[61669]},{"unit":"ns/op","values":[19040]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=16384-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[145847597]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[147909636]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[4]},{"unit":"ns/op","values":[258705832]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[147962943]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145291251]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=2048-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2364936]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[499]},{"unit":"ns/op","values":[2364591]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[478]},{"unit":"ns/op","values":[2498264]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2355010]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[488]},{"unit":"ns/op","values":[2478319]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=256-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[22846]},{"unit":"ns/op","values":[52535]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[23151]},{"unit":"ns/op","values":[52140]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[18460]},{"unit":"ns/op","values":[65092]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[23047]},{"unit":"ns/op","values":[52953]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[22125]},{"unit":"ns/op","values":[54310]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=4096-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[130]},{"unit":"ns/op","values":[9155391]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9218691]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[124]},{"unit":"ns/op","values":[9575946]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9202408]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9248165]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=512-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[6894]},{"unit":"ns/op","values":[168226]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[7087]},{"unit":"ns/op","values":[169339]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[6002]},{"unit":"ns/op","values":[200555]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[6895]},{"unit":"ns/op","values":[170649]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[7040]},{"unit":"ns/op","values":[169833]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]},{"name":"BubbleSort/length=8192-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[34]},{"unit":"ns/op","values":[36447866]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36454446]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[30]},{"unit":"ns/op","values":[39383757]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[31]},{"unit":"ns/op","values":[36667801]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[32]},{"unit":"ns/op","values":[36594154]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]}]}];
+
+        class BenchmarkVisualizer {
+            constructor() {
+                this.data = [];
+                this.filteredData = [];
+                this.charts = new Map();
+                this.comparisonState = new Map();
+                this.chartTypes = new Map(); 
+                this.colors = [
+                    'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
+                    'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
+                    'hsl(173.4 58.9% 39.1%)', 'hsl(43.3 96.4% 56.3%)', 'hsl(197.4 71.4% 73.3%)',
+                    'hsl(20.5 90.2% 48.2%)'
+                ];
+            }
+
+            init() {
+                this.loadData();
+                this.setupGlobalEventListeners();
+                this.filteredData = [...this.data];
+                this.renderCharts();
+            }
+
+            
+            createSafeId(seriesName) {
+                return seriesName.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+
+            loadData() {
+                try {
+                    this.data = window.BENCHMARK_DATA || [];
+                } catch (error) {
+                    console.error('Failed to load benchmark data:', error);
+                    this.data = [];
+                    this.showError('Failed to load benchmark data.');
+                }
+            }
+
+            showError(message) {
+                document.getElementById('chartsContainer').innerHTML =
+                    `<div class="no-results">${message}</div>`;
+            }
+
+            setupGlobalEventListeners() {
+                const filterInput = document.getElementById('benchmarkFilter');
+                const clearButton = document.getElementById('clearFilter');
+
+                filterInput.addEventListener('input', (e) => this.filterBenchmarks(e.target.value));
+                clearButton.addEventListener('click', () => {
+                    filterInput.value = '';
+                    this.filterBenchmarks('');
+                });
+
+                window.addEventListener('resize', () => {
+                    this.charts.forEach(chart => chart.resize());
+                });
+            }
+
+            filterBenchmarks(query) {
+                if (!query.trim()) {
+                    this.filteredData = [...this.data];
+                } else {
+                    const lowerQuery = query.toLowerCase();
+                    this.filteredData = this.data.filter(series =>
+                        series.name.toLowerCase().includes(lowerQuery)
+                    );
+                }
+                this.renderCharts();
+            }
+
+            renderCharts() {
+                const container = document.getElementById('chartsContainer');
+                container.innerHTML = '';
+                this.charts.clear();
+
+                if (this.filteredData.length === 0) {
+                    if (this.data.length === 0) {
+                        this.showError('No benchmark data available.');
+                    } else {
+                        this.showError('No benchmarks found matching the filter.');
+                    }
+                    return;
+                }
+
+                this.filteredData.forEach((series, index) => {
+                    this.createChart(series, container, index);
+                });
+            }
+
+            createChart(series, container, index) {
+                const safeId = this.createSafeId(series.name);
+                const units = this.getUnitsForSeries(series);
+
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-card';
+                chartDiv.innerHTML = this.createChartHTML(series, units, safeId);
+
+                container.appendChild(chartDiv);
+
+                
+                setTimeout(() => this.initializeChart(chartDiv, series, index, units[0]), 10);
+            }
+
+            createChartHTML(series, units, safeId) {
+                const tabsHtml = units.map((unit, index) =>
+                    `<button class="unit-tab ${index === 0 ? 'active' : ''}" data-unit="${unit}">
+                        ${unit}
+                    </button>`
+                ).join('');
+
+                return `
+                    <div class="chart-header">
+                        <h2 class="chart-title">${series.name}</h2>
+                        <button class="fullscreen-btn" data-chart="${series.name}">⛶</button>
+                    </div>
+                    <div class="tab-container">
+                        <div class="tabs-group">${tabsHtml}</div>
+                        <div class="buttons-group">
+                            <div class="chart-type-toggle">
+                                <button class="chart-type-btn active" data-type="line">Line</button>
+                                <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
+                            </div>
+                            <div class="action-buttons-row">
+                                <div class="icon-buttons-group">
+                                    <button class="action-button screenshot-btn" data-chart="${series.name}">📷</button>
+                                    <button class="action-button compare-btn" data-chart="${series.name}">📊</button>
+                                </div>
+                                <label class="scale-checkbox">
+                                    <input type="checkbox" id="scale-${safeId}" checked>
+                                    <span>Scale Y-axis</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comparison-info" id="comparison-${safeId}"></div>
+                    <div class="chart-wrapper"></div>
+                    <div class="stats-info" id="stats-${safeId}"></div>
+                `;
+            }
+
+            initializeChart(chartDiv, series, index, defaultUnit) {
+                const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                const chart = echarts.init(chartWrapper);
+                const safeId = this.createSafeId(series.name);
+
+                this.charts.set(series.name, chart);
+                this.setupChartEventListeners(chartDiv, series, chart, index);
+                this.renderChartForUnit(series, defaultUnit, chart, index);
+            }
+
+            setupChartEventListeners(chartDiv, series, chart, index) {
+                const safeId = this.createSafeId(series.name);
+
+                
+                chartDiv.querySelectorAll('.chart-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const chartType = e.target.dataset.type;
+                        this.chartTypes.set(series.name, chartType);
+
+                        
+                        const compareBtn = chartDiv.querySelector('.compare-btn');
+                        if (this.comparisonState.has(series.name)) {
+                            this.exitComparisonMode(series.name, compareBtn);
+                        }
+
+                        
+                        if (chartType === 'boxplot') {
+                            compareBtn.style.opacity = '0.5';
+                            compareBtn.style.pointerEvents = 'none';
+                        } else {
+                            compareBtn.style.opacity = '1';
+                            compareBtn.style.pointerEvents = 'auto';
+                        }
+
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                        }
+                    });
+                });
+
+                
+                chartDiv.querySelectorAll('.unit-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.unit-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.renderChartForUnit(series, e.target.dataset.unit, chart, index);
+                    });
+                });
+
+                
+                const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                scaleCheckbox?.addEventListener('change', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    if (activeTab) {
+                        this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                    }
+                });
+
+                
+                chartDiv.querySelector('.fullscreen-btn')?.addEventListener('click', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                    if (activeTab) {
+                        this.openFullscreen(series, activeTab.dataset.unit, index, scaleCheckbox.checked);
+                    }
+                });
+
+                
+                chartDiv.querySelector('.screenshot-btn')?.addEventListener('click', () => {
+                    this.downloadScreenshot(chart, series.name);
+                });
+
+                
+                chartDiv.querySelector('.compare-btn')?.addEventListener('click', (e) => {
+                    this.toggleComparisonMode(series.name, e.target);
+                });
+            }
+
+            renderChartForUnit(series, unit, chart, index) {
+                const chartType = this.chartTypes.get(series.name) || 'line';
+                const data = this.extractChartData(series, unit);
+                const shouldScale = this.shouldScaleChart(series.name);
+
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                chart.setOption(option, true);
+                this.updateStatistics(series.name, data.values, unit);
+
+                
+                if (chartType === 'line') {
+                    this.setupChartClickHandler(chart, series.name, unit, data);
+                } else if (chartType === 'boxplot') {
+                    this.setupBoxPlotClickHandler(chart, data);
+                }
+            }
+
+            extractChartData(series, unit) {
+                const plotData = [];
+                const commitHashes = [];
+                const allValues = []; 
+                const valuesByCommit = []; 
+
+                series.measurements.forEach(measurement => {
+                    const metric = measurement.metrics.find(m => m.unit === unit);
+                    if (metric && metric.values) {
+                        const shortHash = measurement.commit_hash.substring(0, 8);
+
+                        
+                        const mean = metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+
+                        plotData.push([shortHash, mean]);
+                        commitHashes.push(measurement.commit_hash);
+                        allValues.push(...metric.values); 
+                        valuesByCommit.push({
+                            shortHash,
+                            fullHash: measurement.commit_hash,
+                            values: metric.values
+                        });
+                    }
+                });
+
+                return { plotData, commitHashes, values: allValues, valuesByCommit };
+            }
+
+            shouldScaleChart(seriesName) {
+                const safeId = this.createSafeId(seriesName);
+                const checkbox = document.getElementById(`scale-${safeId}`);
+                return checkbox ? checkbox.checked : true;
+            }
+
+            createChartOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                return {
+                    animation: true,
+                    tooltip: this.createTooltipConfig(unit, data),
+                    xAxis: this.createXAxisConfig(),
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [{
+                        name: series.name,
+                        type: 'line',
+                        data: data.plotData,
+                        symbol: 'circle',
+                        symbolSize: 7,
+                        smooth: true,
+                        lineStyle: { width: 2, color: color },
+                        itemStyle: { color: color },
+                        emphasis: { disabled: true },
+                        blur: { disabled: true },
+                        select: { disabled: true }
+                    }]
+                };
+            }
+
+            createTooltipConfig(unit, data) {
+                return {
+                    trigger: 'item',
+                    backgroundColor: 'hsl(0 0% 100%)',
+                    borderColor: 'hsl(214.3 31.8% 91.4%)',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: 'hsl(222.2 84% 4.9%)',
+                        fontSize: 12,
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    formatter: (params) => {
+                        const currentValue = params.value[1];
+                        const dataIndex = params.dataIndex;
+
+                        
+                        const commitData = data.valuesByCommit[dataIndex];
+                        const sampleCount = commitData ? commitData.values.length : 0;
+
+                        let tooltip = `Commit: ${params.name}<br/>Mean: ${currentValue.toLocaleString()} ${unit}`;
+
+                        if (sampleCount > 0) {
+                            tooltip += `<br/>Samples: ${sampleCount}`;
+                        }
+
+                        if (dataIndex > 0) {
+                            const previousValue = data.plotData[dataIndex - 1][1];
+                            const percentChange = ((currentValue - previousValue) / previousValue * 100);
+                            const changeSign = percentChange > 0 ? '+' : '';
+                            tooltip += `<br/><span style="font-weight: 500;">
+                                ${changeSign}${percentChange.toFixed(2)}% from previous
+                            </span>`;
+                        }
+                        return tooltip;
+                    }
+                };
+            }
+
+            createXAxisConfig() {
+                return {
+                    type: 'category',
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        rotate: 45, fontSize: 11,
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    }
+                };
+            }
+
+            createYAxisConfig(unit, shouldScale) {
+                return {
+                    type: 'value',
+                    scale: shouldScale,
+                    name: unit,
+                    nameLocation: 'middle',
+                    nameGap: 40,
+                    nameTextStyle: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontSize: 11,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        formatter: (value) => {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                            return value.toLocaleString();
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: { color: 'hsl(214.3 31.8% 91.4%)', type: 'dashed' }
+                    }
+                };
+            }
+
+            
+            darkenColor(hslColor, amount) {
+                
+                const match = hslColor.match(/hsl\(([^)]+)\)/);
+                if (!match) return hslColor;
+
+                const parts = match[1].split(/\s+/);
+                const h = parseFloat(parts[0]);
+                const s = parseFloat(parts[1]);
+                const l = parseFloat(parts[2]);
+
+                
+                const newL = Math.max(0, l - (l * amount));
+
+                return `hsla(${h}, ${s}%, ${newL}%, 0.3)`;
+            }
+
+            
+            calculateBoxPlotData(values) {
+                if (values.length === 0) return null;
+
+                const sorted = [...values].sort((a, b) => a - b);
+                const n = sorted.length;
+
+                const min = sorted[0];
+                const max = sorted[n - 1];
+
+                const median = n % 2 === 0
+                    ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+                    : sorted[Math.floor(n / 2)];
+
+                const q1Index = Math.floor(n * 0.25);
+                const q1 = sorted[q1Index];
+
+                const q3Index = Math.floor(n * 0.75);
+                const q3 = sorted[q3Index];
+
+                const iqr = q3 - q1;
+
+                return {
+                    boxData: [min, q1, median, q3, max],
+                    stats: { min, q1, median, q3, max, iqr }
+                };
+            }
+
+            createBoxPlotOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                
+                const darkerColor = this.darkenColor(color, 0.3);
+
+                if (!data.valuesByCommit || data.valuesByCommit.length === 0) {
+                    return this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                
+                const commitLabels = [];
+                const boxPlotDataPoints = [];
+
+                data.valuesByCommit.forEach((commit, commitIndex) => {
+                    const boxData = this.calculateBoxPlotData(commit.values);
+                    if (boxData) {
+                        commitLabels.push(commit.shortHash);
+                        boxPlotDataPoints.push(boxData.boxData);
+                    }
+                });
+
+                return {
+                    animation: true,
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        formatter: (params) => {
+                            
+                            const [_, min, q1, median, q3, max] = params.value;
+                            const commitHash = commitLabels[params.dataIndex];
+                            return `
+                                <strong>Commit: ${commitHash}</strong><br/>
+                                Max: ${max.toLocaleString()} ${unit}<br/>
+                                Q3: ${q3.toLocaleString()} ${unit}<br/>
+                                Median: ${median.toLocaleString()} ${unit}<br/>
+                                Q1: ${q1.toLocaleString()} ${unit}<br/>
+                                Min: ${min.toLocaleString()} ${unit}
+                            `;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commitLabels,
+                        axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontFamily: 'JetBrains Mono, monospace'
+                        }
+                    },
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [
+                        {
+                            name: series.name,
+                            type: 'boxplot',
+                            data: boxPlotDataPoints,
+                            itemStyle: {
+                                borderColor: color,
+                                borderWidth: 2,
+                                color: darkerColor
+                            },
+                            emphasis: {
+                                disabled: true
+                            }
+                        }
+                    ]
+                };
+            }
+
+            setupChartClickHandler(chart, seriesName, unit, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.seriesType === 'line') {
+                        const comparisonHandled = this.handleComparisonClick(seriesName, params, unit, data);
+                        if (!comparisonHandled) {
+                            this.openCommitUrl(data.commitHashes[params.dataIndex]);
+                        }
+                    }
+                });
+            }
+
+            setupBoxPlotClickHandler(chart, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.componentSubType === 'boxplot') {
+                        const commitHash = data.valuesByCommit[params.dataIndex].fullHash;
+                        this.openCommitUrl(commitHash);
+                    }
+                });
+            }
+
+            openCommitUrl(commitHash) {
+                const repoUrl = this.getRepositoryUrl();
+                if (repoUrl && commitHash) {
+                    window.open(`${repoUrl}/commit/${commitHash}`, '_blank');
+                }
+            }
+
+            getRepositoryUrl() {
+                const hostname = window.location.hostname;
+                if (hostname.endsWith('.github.io')) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 3) {
+                        const username = parts[0];
+                        const repoName = window.location.pathname.split('/')[1] || parts[1];
+                        return `https://github.com/${username}/${repoName}`;
+                    }
+                }
+                if (window.location.href.includes('github.com')) {
+                    const match = window.location.href.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                    if (match) return `https://github.com/${match[1]}`;
+                }
+                return 'https://github.com/dkharms/chronos';
+            }
+
+            updateStatistics(seriesName, values, unit) {
+                const safeId = this.createSafeId(seriesName);
+                const statsDiv = document.getElementById(`stats-${safeId}`);
+                if (!statsDiv || values.length === 0) return;
+
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                const cv = (stdDev / mean) * 100;
+
+                const formatValue = (value) => {
+                    if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
+                    if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
+                    return value.toLocaleString(undefined, {maximumFractionDigits: 2});
+                };
+
+                statsDiv.innerHTML = `
+                    <table class="stats-table">
+                        <thead>
+                            <tr><th>Min</th><th>Max</th><th>Mean</th><th>Std Dev</th><th>CV %</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatValue(min)} ${unit}</td>
+                                <td>${formatValue(max)} ${unit}</td>
+                                <td>${formatValue(mean)} ${unit}</td>
+                                <td>${formatValue(stdDev)} ${unit}</td>
+                                <td>${cv.toFixed(1)}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            openFullscreen(series, unit, index, shouldScale) {
+                const modal = document.getElementById('chartModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalChart = document.getElementById('modalChart');
+                const modalClose = document.getElementById('modalClose');
+
+                
+                modalTitle.textContent = `${series.name} - ${unit}`;
+
+                
+                modal.classList.add('active');
+
+                
+                const chartInstance = echarts.init(modalChart);
+
+                
+                const chartType = this.chartTypes.get(series.name) || 'line';
+
+                
+                const data = this.extractChartData(series, unit);
+
+                
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                    this.setupBoxPlotClickHandler(chartInstance, data);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                    this.setupChartClickHandler(chartInstance, series.name, unit, data);
+                }
+
+                chartInstance.setOption(option);
+
+                
+                const closeModal = () => {
+                    modal.classList.remove('active');
+                    chartInstance.dispose();
+                };
+
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
+
+                
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+
+                
+                const resizeHandler = () => {
+                    if (modal.classList.contains('active')) {
+                        chartInstance.resize();
+                    }
+                };
+                window.addEventListener('resize', resizeHandler);
+
+                
+                const originalClose = closeModal;
+                closeModal = () => {
+                    window.removeEventListener('resize', resizeHandler);
+                    originalClose();
+                };
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
+            }
+
+            downloadScreenshot(chart, chartName) {
+                try {
+                    
+                    const chartDataURL = chart.getDataURL({
+                        type: 'png', pixelRatio: 2, backgroundColor: '#ffffff'
+                    });
+
+                    
+                    const safeId = this.createSafeId(chartName);
+                    const statsTable = document.getElementById(`stats-${safeId}`).querySelector('.stats-table');
+
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    
+                    const chartImg = new Image();
+                    chartImg.onload = () => {
+                        
+                        const tableHeight = 80; 
+                        const spacing = 10; 
+                        canvas.width = chartImg.width;
+                        canvas.height = chartImg.height + tableHeight + spacing;
+
+                        
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        
+                        ctx.drawImage(chartImg, 0, 0);
+
+                        
+                        this.drawTableToCanvas(ctx, statsTable, 0, chartImg.height + spacing, canvas.width, tableHeight)
+                            .then(() => {
+                                
+                                const link = document.createElement('a');
+                                link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                            });
+                    };
+                    chartImg.src = chartDataURL;
+
+                } catch (error) {
+                    console.error('Screenshot failed:', error);
+                    alert('Failed to save screenshot. Please try again.');
+                }
+            }
+
+            async drawTableToCanvas(ctx, table, x, y, width, height) {
+                return new Promise((resolve) => {
+                    
+                    const rows = table.querySelectorAll('tr');
+                    const cellData = [];
+
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('th, td');
+                        const rowData = Array.from(cells).map(cell => ({
+                            text: cell.textContent.trim(),
+                            isHeader: cell.tagName === 'TH'
+                        }));
+                        cellData.push(rowData);
+                    });
+
+                    
+                    const cellWidth = width / cellData[0].length;
+                    const cellHeight = height / cellData.length;
+
+                    
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, width, height);
+
+                    
+                    cellData.forEach((row, rowIndex) => {
+                        row.forEach((cell, colIndex) => {
+                            const cellX = x + colIndex * cellWidth;
+                            const cellY = y + rowIndex * cellHeight;
+
+                            
+                            if (cell.isHeader) {
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.fillRect(cellX, cellY, cellWidth, cellHeight);
+                            }
+
+                            
+                            ctx.strokeStyle = '#e2e8f0';
+                            ctx.strokeRect(cellX, cellY, cellWidth, cellHeight);
+
+                            
+                            ctx.fillStyle = cell.isHeader ? '#64748b' : '#0f172a';
+                            ctx.font = cell.isHeader ? '600 11px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+
+                            const textX = cellX + cellWidth / 2;
+                            const textY = cellY + cellHeight / 2;
+                            ctx.fillText(cell.text, textX, textY);
+                        });
+                    });
+
+                    resolve();
+                });
+            }
+
+            toggleComparisonMode(chartName, button) {
+                const state = this.comparisonState.get(chartName) || { active: false, selectedPoints: [] };
+                if (state.active) {
+                    this.exitComparisonMode(chartName, button);
+                } else {
+                    this.enterComparisonMode(chartName, button);
+                }
+            }
+
+            enterComparisonMode(chartName, button) {
+                const state = { active: true, selectedPoints: [] };
+                this.comparisonState.set(chartName, state);
+                button.classList.add('active');
+                button.textContent = '❌';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.style.display = 'block';
+                comparisonInfo.innerHTML = '<strong>Comparison Mode:</strong> Click on two data points to compare them.';
+            }
+
+            exitComparisonMode(chartName, button) {
+                this.comparisonState.delete(chartName);
+                button.classList.remove('active');
+                button.textContent = '📊';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.style.display = 'none';
+
+                const chart = this.charts.get(chartName);
+                if (chart) {
+                    const option = chart.getOption();
+                    option.series[0].markPoint = undefined;
+                    chart.setOption(option);
+                }
+            }
+
+            handleComparisonClick(chartName, params, unit, data) {
+                const state = this.comparisonState.get(chartName);
+                if (!state || !state.active) return false;
+
+                const pointData = {
+                    index: params.dataIndex,
+                    commit: params.name,
+                    fullCommit: data.commitHashes[params.dataIndex],
+                    value: params.value[1]
+                };
+
+                if (state.selectedPoints.length === 0) {
+                    state.selectedPoints.push(pointData);
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
+                } else if (state.selectedPoints.length === 1) {
+                    state.selectedPoints.push(pointData);
+                    this.showComparison(chartName, state, unit);
+                } else {
+                    state.selectedPoints = [pointData];
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
+                }
+
+                this.highlightSelectedPoints(chartName, state);
+                return true;
+            }
+
+            updateComparisonDisplay(chartName, state, mode, unit) {
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                if (mode === 'first') {
+                    const point = state.selectedPoints[0];
+                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${point.value.toLocaleString()} ${unit})<br/><em>Click another point to compare.</em>`;
+                }
+            }
+
+            showComparison(chartName, state, unit) {
+                const [point1, point2] = state.selectedPoints;
+                const diff = point2.value - point1.value;
+                const percentChange = (diff / point1.value * 100);
+                const changeSign = diff > 0 ? '+' : '';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.innerHTML = `
+                    <strong>Comparison Results:</strong><br/>
+                    <strong>Point 1:</strong> ${point1.commit} → ${point1.value.toLocaleString()} ${unit}<br/>
+                    <strong>Point 2:</strong> ${point2.commit} → ${point2.value.toLocaleString()} ${unit}<br/>
+                    <strong>Difference:</strong> ${changeSign}${diff.toLocaleString()} ${unit} (${changeSign}${percentChange.toFixed(2)}%)
+                `;
+            }
+
+            highlightSelectedPoints(chartName, state) {
+                const chart = this.charts.get(chartName);
+                if (!chart) return;
+
+                const markPoints = state.selectedPoints.map((point, index) => ({
+                    coord: [point.index, point.value],
+                    symbol: 'pin',
+                    symbolSize: 30,
+                    itemStyle: { color: index === 0 ? '#3b82f6' : '#ef4444' },
+                    label: {
+                        show: true, position: 'top',
+                        formatter: `Point ${index + 1}`, color: '#000'
+                    }
+                }));
+
+                const option = chart.getOption();
+                option.series[0].markPoint = { data: markPoints };
+                chart.setOption(option);
+            }
+
+            getUnitsForSeries(series) {
+                const units = new Set();
+                series.measurements.forEach(measurement => {
+                    measurement.metrics.forEach(metric => units.add(metric.unit));
+                });
+                return Array.from(units).sort();
+            }
+        }
+
+        
+        function initializeWhenReady() {
+            if (typeof echarts !== 'undefined' && document.readyState === 'complete') {
+                const visualizer = new BenchmarkVisualizer();
+                visualizer.init();
+            } else {
+                setTimeout(initializeWhenReady, 50);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeWhenReady);
+        } else {
+            initializeWhenReady();
+        }
+    </script>
+</body>
+</html>
