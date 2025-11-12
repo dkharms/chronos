@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"path"
 	"time"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
@@ -23,7 +24,7 @@ var (
 	htmlTemplate string
 )
 
-func Publish(gctx Context) error {
+func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		ActionSaveTimeout,
@@ -31,43 +32,36 @@ func Publish(gctx Context) error {
 
 	defer cancel()
 
-	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner, gctx.Repository,
-		func(ctx context.Context, r gitops.Repository) error {
-			var series []benchmark.Series
+	var series []benchmark.Series
 
-			err := r.WithBranch(
-				ctx, gctx.BranchStorage,
-				func() ([]string, string, error) {
-					xseries, xerr := loadBenchmarksSeries(ChronosMergedFilename)
-					if xerr != nil {
-						return nil, "", xerr
-					}
-					series = xseries
-					return nil, "", nil
-				},
-			)
-
-			if err != nil {
-				return err
+	err := r.WithBranch(
+		ctx, input.BranchStorage,
+		func() ([]string, string, error) {
+			xseries, xerr := loadCollectedBenchmarks(ChronosMergedFilename)
+			if xerr != nil {
+				return nil, "", xerr
 			}
+			series = xseries
+			return nil, "", nil
+		},
+	)
 
-			return r.WithBranch(
-				ctx, gctx.BranchPages,
-				func() ([]string, string, error) {
-					if xerr := saveIndexFile(series); xerr != nil {
-						return nil, "", xerr
-					}
-					return []string{"index.html"},
-						fmt.Sprintf(ActionPublishCommitMessage, gctx.CommitHash),
-						saveMergedBenchmarks(series)
-				},
-			)
+	if err != nil {
+		return err
+	}
+
+	return r.WithBranch(
+		ctx, cfg.GithubPages.Branch,
+		func() ([]string, string, error) {
+			filepath := path.Join(cfg.GithubPages.Path, "index.html")
+			return []string{filepath},
+				fmt.Sprintf(ActionPublishCommitMessage, input.CommitHash),
+				saveIndexFile(filepath, series)
 		},
 	)
 }
 
-func saveIndexFile(series []benchmark.Series) error {
+func saveIndexFile(filepath string, series []benchmark.Series) error {
 	tmpl, err := template.New("index").Parse(htmlTemplate)
 	if err != nil {
 		return err
@@ -78,7 +72,7 @@ func saveIndexFile(series []benchmark.Series) error {
 		return err
 	}
 
-	f, err := os.OpenFile("index.html", os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	f, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}

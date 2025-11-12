@@ -46,6 +46,7 @@ linters:
       enable-all: true
       disable:
         - composites
+        - fieldalignment
   exclusions:
     generated: lax
     rules:

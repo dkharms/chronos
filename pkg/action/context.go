@@ -1,12 +1,11 @@
 package action
 
-type Context struct {
+type Input struct {
 	Token      string
 	Owner      string
 	Repository string
 	CommitHash string
 
-	InputFilepath string
-	BranchStorage string
-	BranchPages   string
+	BenchmarksFilepath string
+	BranchStorage      string
 }

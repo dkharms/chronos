@@ -8,19 +8,14 @@ inputs:
     description: |
       Your GitHub token
     required: true
-  benchmarks-file-path:
-    description: |
-      Path to benchmark results of your current workflow run
   branch-storage:
     description: |
       This git branch will be used as a storage for benchmarks
       measurements across all executions with `store` action
     default: chronos-storage
-  branch-github-pages:
+  benchmarks-file-path:
     description: |
-      This git branch will be used as a storage for benchmarks
-      measurements across all executions with `store` action
-    default: gh-pages
+      Path to benchmark results of your current workflow run
   action-to-perform:
     description: |
       You can perform `save`, `summarize` or `publish` action:
@@ -49,7 +44,6 @@ runs:
     run: ./chronos
     env:
       INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
-      INPUT_BENCHMARKS-FILE-PATH: ${{ inputs.benchmarks-file-path }}
       INPUT_BRANCH-STORAGE: ${{ inputs.branch-storage }}
-      INPUT_BRANCH-GITHUB-PAGES: ${{ inputs.branch-github-pages }}
+      INPUT_BENCHMARKS-FILE-PATH: ${{ inputs.benchmarks-file-path }}
       INPUT_ACTION-TO-PERFORM: ${{ inputs.action-to-perform }}

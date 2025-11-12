@@ -20,7 +20,7 @@ var (
 	summaryTemplate string
 )
 
-func Summarize(gctx Context) error {
+func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
 	ctx, cancel := context.WithTimeout(
 		context.Background(),
 		ActionSummarizeTimeout,
@@ -28,28 +28,21 @@ func Summarize(gctx Context) error {
 
 	defer cancel()
 
-	return gitops.WithTransient(
-		ctx, gctx.Token, gctx.Owner, gctx.Repository,
-		func(ctx context.Context, r gitops.Repository) error {
-			return r.WithBranch(
-				ctx, gctx.BranchStorage,
-				func() ([]string, string, error) {
-					incoming, err := parseBenchmarkSeries(
-						gctx.CommitHash, gctx.InputFilepath,
-					)
-					if err != nil {
-						return nil, "", err
-					}
+	return r.WithBranch(
+		ctx, input.BranchStorage,
+		func() ([]string, string, error) {
+			incoming, err := loadIncomingBenchmarks(input.CommitHash, input.BenchmarksFilepath)
+			if err != nil {
+				return nil, "", err
+			}
 
-					series, err := loadBenchmarksSeries(ChronosMergedFilename)
-					if err != nil {
-						return nil, "", err
-					}
+			series, err := loadCollectedBenchmarks(ChronosMergedFilename)
+			if err != nil {
+				return nil, "", err
+			}
 
-					return nil, "", githubactions.AddStepSummaryTemplate(
-						summaryTemplate, benchmark.Diff(series, incoming),
-					)
-				},
+			return nil, "", githubactions.AddStepSummaryTemplate(
+				summaryTemplate, benchmark.Diff(series, incoming),
 			)
 		},
 	)

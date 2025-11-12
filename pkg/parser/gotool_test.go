@@ -5,8 +5,9 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/dkharms/chronos/pkg/benchmark"
 	"github.com/stretchr/testify/require"
+
+	"github.com/dkharms/chronos/pkg/benchmark"
 )
 
 var (
