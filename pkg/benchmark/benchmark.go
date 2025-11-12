@@ -71,9 +71,13 @@ func comparator(
 	threshold float64,
 ) func(float64, float64) CompareVerdict {
 	return func(previous, current float64) CompareVerdict {
-		if withinThreshold(previous, current, threshold) {
+		within := previous == current ||
+			withinThreshold(previous, current, threshold)
+
+		if within {
 			return CompareVerdictSame
 		}
+
 		return cmp(previous, current)
 	}
 }
@@ -82,8 +86,7 @@ func withinThreshold(previous, current, threshold float64) bool {
 	if previous == 0 || current == 0 {
 		return false
 	}
-	return previous == current ||
-		math.Abs(1-(previous/current)) < threshold
+	return math.Abs(1-(previous/current)) <= threshold
 }
 
 var (
