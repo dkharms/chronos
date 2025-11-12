@@ -44,11 +44,8 @@ func processBenchmarks(cfg Config, gctx Input) error {
 
 	merged := benchmark.Merge(collected, incoming)
 	for i := range len(merged) {
-		trim := min(
-			len(merged[i].Measurements),
-			cfg.Storage.MeasurementsCapacity,
-		)
-		merged[i].Measurements = merged[i].Measurements[:trim]
+		sub := max(0, len(merged[i].Measurements)-cfg.Storage.MeasurementsCapacity)
+		merged[i].Measurements = merged[i].Measurements[sub:]
 	}
 
 	return saveMergedBenchmarks(merged)
