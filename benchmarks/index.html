@@ -1,0 +1,1339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🕐 chronos</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <style>
+        * {
+            font-family: 'JetBrains Mono', monospace;
+        }
+        body {
+            margin: 0;
+            padding: 24px max(24px, 5%);
+            background-color: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        h1 {
+            color: hsl(222.2 84% 4.9%);
+            margin-bottom: 32px;
+            text-align: center;
+            font-weight: 600;
+            font-size: 30px;
+            letter-spacing: -0.025em;
+        }
+        .filter-section {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 20px;
+            padding: 8px 0;
+        }
+        .filter-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            min-width: 280px;
+            max-width: 400px;
+        }
+        .filter-icon {
+            position: absolute;
+            left: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 16px;
+            pointer-events: none;
+        }
+        .filter-label {
+            font-weight: 500;
+            font-size: 14px;
+            color: hsl(222.2 84% 4.9%);
+            white-space: nowrap;
+        }
+        .filter-input {
+            width: 100%;
+            padding: 8px 40px 8px 40px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            font-size: 14px;
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+        }
+        .filter-input:focus {
+            outline: none;
+            border-color: hsl(221.2 83.2% 53.3%);
+            box-shadow: 0 0 0 2px hsl(221.2 83.2% 53.3% / 0.1);
+        }
+        .filter-input:not(:placeholder-shown) + .clear-button {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .clear-button {
+            position: absolute;
+            right: 8px;
+            background: none;
+            border: none;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            font-size: 16px;
+            padding: 4px;
+            opacity: 0;
+            pointer-events: none;
+            transition: all 0.2s ease;
+            border-radius: 4px;
+        }
+        .clear-button:hover {
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
+        }
+        .charts-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 550px), 1fr));
+            gap: 24px;
+        }
+        .chart-card {
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            padding: 24px;
+            background: hsl(0 0% 100%);
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 0 0 20px 0;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            padding-bottom: 12px;
+        }
+        .chart-title {
+            margin: 0;
+            color: hsl(222.2 84% 4.9%);
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: -0.025em;
+        }
+        .fullscreen-btn {
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            font-size: 16px;
+            cursor: pointer;
+            color: hsl(222.2 84% 4.9%);
+            padding: 6px 10px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+            line-height: 1;
+        }
+        .fullscreen-btn:hover {
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .unit-tab {
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 8px 16px;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 500;
+            letter-spacing: -0.01em;
+            display: inline-block;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+        }
+        .unit-tab:hover {
+            background: hsl(210 40% 98%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .unit-tab.active {
+            background: hsl(222.2 47.4% 11.2%);
+            color: hsl(210 40% 98%);
+            border-color: hsl(222.2 47.4% 11.2%);
+        }
+        .tab-container {
+            margin-bottom: 20px;
+            padding-bottom: 16px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            flex-wrap: wrap;
+        }
+        .tabs-group {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .buttons-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-end;
+        }
+        .action-buttons-row {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 8px;
+        }
+        .icon-buttons-group {
+            display: flex;
+            gap: 4px;
+        }
+        .scale-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 12px;
+            color: hsl(215.4 16.3% 46.9%);
+            cursor: pointer;
+            user-select: none;
+        }
+        .scale-checkbox input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+        }
+        .action-button {
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            padding: 6px 10px;
+            cursor: pointer;
+            font-size: 16px;
+            color: hsl(222.2 84% 4.9%);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            border-radius: 4px;
+            line-height: 1;
+        }
+        .action-button:hover {
+            background: hsl(0 0% 100%);
+            border-color: hsl(217.2 32.6% 17.5%);
+        }
+        .action-button.active {
+            background: hsl(221.2 83.2% 53.3%);
+            color: hsl(0 0% 100%);
+            border-color: hsl(221.2 83.2% 53.3%);
+        }
+        .chart-type-toggle {
+            display: flex;
+            gap: 4px;
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            padding: 2px;
+            background: hsl(210 40% 98%);
+        }
+        .chart-type-btn {
+            background: transparent;
+            border: none;
+            border-radius: 4px;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 500;
+            color: hsl(215.4 16.3% 46.9%);
+            transition: all 0.2s ease;
+        }
+        .chart-type-btn:hover {
+            color: hsl(222.2 84% 4.9%);
+        }
+        .chart-type-btn.active {
+            background: hsl(0 0% 100%);
+            color: hsl(222.2 84% 4.9%);
+            box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
+        }
+        .comparison-info {
+            margin-top: 12px;
+            padding: 12px;
+            background: hsl(210 40% 98%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            font-size: 13px;
+            display: none;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: hsl(0 0% 0% / 0.8);
+            animation: fadeIn 0.2s ease;
+        }
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-content {
+            background-color: hsl(0 0% 100%);
+            border-radius: 8px;
+            width: 95%;
+            height: 90%;
+            max-width: 1800px;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            animation: slideUp 0.3s ease;
+            box-shadow: 0 20px 25px -5px hsl(0 0% 0% / 0.1), 0 8px 10px -6px hsl(0 0% 0% / 0.1);
+        }
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: hsl(222.2 84% 4.9%);
+            margin: 0;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: hsl(215.4 16.3% 46.9%);
+            padding: 4px 8px;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+        .modal-close:hover {
+            background: hsl(210 40% 95%);
+            color: hsl(222.2 84% 4.9%);
+        }
+        .modal-body {
+            flex: 1;
+            padding: 24px;
+            overflow: auto;
+        }
+        .modal-chart {
+            width: 100%;
+            height: 100%;
+            min-height: 500px;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .chart-wrapper {
+            width: 100%;
+            height: 350px;
+        }
+        .stats-info {
+            margin-top: 0px;
+        }
+        .stats-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12px;
+            color: hsl(222.2 84% 4.9%);
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 6px;
+            overflow: hidden;
+        }
+        .stats-table th,
+        .stats-table td {
+            padding: 8px 12px;
+            text-align: center;
+            border-right: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        .stats-table th:last-child,
+        .stats-table td:last-child {
+            border-right: none;
+        }
+        .stats-table th {
+            background: hsl(210 40% 98%);
+            font-weight: 600;
+            font-size: 11px;
+            color: hsl(215.4 16.3% 46.9%);
+            border-bottom: 1px solid hsl(214.3 31.8% 91.4%);
+        }
+        .stats-table td {
+            font-weight: 500;
+        }
+        .no-results {
+            text-align: center;
+            color: hsl(215.4 16.3% 46.9%);
+            font-size: 14px;
+            padding: 48px;
+            background: hsl(0 0% 100%);
+            border: 1px solid hsl(214.3 31.8% 91.4%);
+            border-radius: 8px;
+            box-shadow: 0 1px 3px 0 hsl(0 0% 0% / 0.1), 0 1px 2px -1px hsl(0 0% 0% / 0.1);
+        }
+        .loading {
+            text-align: center;
+            padding: 48px;
+            font-size: 14px;
+            color: hsl(215.4 16.3% 46.9%);
+        }
+    </style>
+</head>
+<body>
+    <div>
+        <div class="filter-section">
+            <span class="filter-label">Filter benchmarks:</span>
+            <div class="filter-wrapper">
+                <span class="filter-icon">🔍</span>
+                <input type="text" id="benchmarkFilter" class="filter-input" placeholder="Type here...">
+                <button id="clearFilter" class="clear-button">✕</button>
+            </div>
+        </div>
+
+        <div id="chartsContainer" class="charts-container">
+            <div class="loading">Loading benchmark data...</div>
+        </div>
+
+        <div id="chartModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3 class="modal-title" id="modalTitle"></h3>
+                    <button class="modal-close" id="modalClose">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="modalChart" class="modal-chart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        
+        window.BENCHMARK_DATA = [{"name":"BubbleSort/length=1024-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[1929]},{"unit":"ns/op","values":[619180]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[1934]},{"unit":"ns/op","values":[617533]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[1767]},{"unit":"ns/op","values":[683772]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[1953]},{"unit":"ns/op","values":[618369]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[1921]},{"unit":"ns/op","values":[616630]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[1942]},{"unit":"ns/op","values":[619946]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[1934]},{"unit":"ns/op","values":[616184]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[1951]},{"unit":"ns/op","values":[612998]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[1939]},{"unit":"ns/op","values":[613640]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[1875]},{"unit":"ns/op","values":[621046]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[1832]},{"unit":"ns/op","values":[616088]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[1941]},{"unit":"ns/op","values":[617101]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[1960]},{"unit":"ns/op","values":[615177]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[1929]},{"unit":"ns/op","values":[612620]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[1958]},{"unit":"ns/op","values":[616045]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[1924]},{"unit":"ns/op","values":[618289]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[1945]},{"unit":"ns/op","values":[614094]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[1915]},{"unit":"ns/op","values":[617780]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[1947]},{"unit":"ns/op","values":[614474]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[1946]},{"unit":"ns/op","values":[613677]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[1880]},{"unit":"ns/op","values":[614005]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[1278]},{"unit":"ns/op","values":[940277]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[1261]},{"unit":"ns/op","values":[942926]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[1264]},{"unit":"ns/op","values":[948072]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[1268]},{"unit":"ns/op","values":[949441]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[1276,1273,1268,1266,1274,1276,1273,1273,1278,1276]},{"unit":"ns/op","values":[943531,942753,941248,942189,941489,944503,940372,941976,941209,939074]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[1275,1281,1267,1261,1273,1273,1257,1267,1278,1275]},{"unit":"ns/op","values":[940380,940179,942716,943365,939320,940728,942562,950667,951948,940306]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[1249,1267,1275,1274,1278,1269,1269,1262,1274,1275]},{"unit":"ns/op","values":[941049,942720,940822,938447,944267,939663,943315,944520,940786,939803]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[1272,1275,1260,1269,1270,1264,1274,1267,1228,1274]},{"unit":"ns/op","values":[941708,942605,943944,937846,943516,943825,940537,942430,945094,942413]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[1273,1270,1279,1280,1275,1276,1276,1275,1269,1270]},{"unit":"ns/op","values":[939984,943491,938697,942435,937404,939204,939365,941640,943239,942629]}]}]},{"name":"BubbleSort/length=128-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[61236]},{"unit":"ns/op","values":[19448]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[54714]},{"unit":"ns/op","values":[19852]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[50016]},{"unit":"ns/op","values":[23003]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[55792]},{"unit":"ns/op","values":[19407]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[61669]},{"unit":"ns/op","values":[19040]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[52878]},{"unit":"ns/op","values":[20215]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[58528]},{"unit":"ns/op","values":[19226]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[53900]},{"unit":"ns/op","values":[20802]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[62844]},{"unit":"ns/op","values":[19116]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[61482]},{"unit":"ns/op","values":[18764]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[54840]},{"unit":"ns/op","values":[19537]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[56719]},{"unit":"ns/op","values":[19905]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[63651]},{"unit":"ns/op","values":[19037]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[63464]},{"unit":"ns/op","values":[19174]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[62713]},{"unit":"ns/op","values":[19421]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[62895]},{"unit":"ns/op","values":[19201]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[64080]},{"unit":"ns/op","values":[18854]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[61753]},{"unit":"ns/op","values":[19309]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[59011]},{"unit":"ns/op","values":[19228]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[59074]},{"unit":"ns/op","values":[18975]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[58315]},{"unit":"ns/op","values":[19182]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[49092]},{"unit":"ns/op","values":[24869]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[46056]},{"unit":"ns/op","values":[26115]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[44289]},{"unit":"ns/op","values":[25487]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[46806]},{"unit":"ns/op","values":[24924]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[46866,48928,47724,47598,47281,46804,47829,51025,47401,48072]},{"unit":"ns/op","values":[25101,24803,24759,24955,25014,25130,24905,24557,25460,25122]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[47810,49904,46374,47139,48372,49352,47818,49090,47948,46873]},{"unit":"ns/op","values":[25843,25380,24980,24789,25390,24857,24836,24938,25086,25311]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[48219,46628,48817,47224,49830,49128,49940,47994,48868,47452]},{"unit":"ns/op","values":[25156,25197,24987,24747,24701,24645,24653,24468,24385,24710]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[48116,49120,48534,47186,47996,50720,50991,47065,49195,49108]},{"unit":"ns/op","values":[25063,25038,24857,24953,24583,24641,24659,25315,25068,24405]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[48144,45464,48916,46641,45717,46567,46466,47223,45484,47744]},{"unit":"ns/op","values":[25445,25611,25407,25722,25618,26380,25077,25743,25621,25150]}]}]},{"name":"BubbleSort/length=16384-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[145847597]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[147909636]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[4]},{"unit":"ns/op","values":[258705832]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[147962943]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145291251]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[143664838]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[147316214]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[144081551]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[146383374]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145343574]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[146372020]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[143951955]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[146284985]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[7]},{"unit":"ns/op","values":[147526236]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[144448456]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[146626221]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145332794]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145630337]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[143837808]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145704024]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[8]},{"unit":"ns/op","values":[145363070]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[5]},{"unit":"ns/op","values":[234702544]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[5]},{"unit":"ns/op","values":[233968708]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[5]},{"unit":"ns/op","values":[234163796]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[5]},{"unit":"ns/op","values":[234647663]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[5,5,5,5,5,5,5,5,5,5]},{"unit":"ns/op","values":[233892943,235534302,234293821,234043557,234716413,234360006,234271763,234312670,234248748,234496537]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[5,5,5,5,5,5,5,5,5,5]},{"unit":"ns/op","values":[234201134,234248147,234415049,234622958,233943519,234399523,233898799,234355839,234719491,233882530]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[5,5,5,5,5,5,5,5,5,5]},{"unit":"ns/op","values":[234946200,234582658,234579224,234465504,234043993,234806185,234546840,234750934,234617791,234927948]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[5,5,5,5,5,5,5,5,5,5]},{"unit":"ns/op","values":[235040120,233958215,233968277,234375974,234379934,234539488,234999763,237159989,234147072,236652746]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[5,5,5,5,5,5,5,5,5,5]},{"unit":"ns/op","values":[234164709,234576088,235756934,234886629,234904517,234502369,234892120,234487326,233999049,234480004]}]}]},{"name":"BubbleSort/length=2048-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2364936]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[499]},{"unit":"ns/op","values":[2364591]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[478]},{"unit":"ns/op","values":[2498264]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2355010]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[488]},{"unit":"ns/op","values":[2478319]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[489]},{"unit":"ns/op","values":[2401384]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2366977]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2367421]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2359015]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2362351]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[511]},{"unit":"ns/op","values":[2354820]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2360004]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2395886]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[501]},{"unit":"ns/op","values":[2359871]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[496]},{"unit":"ns/op","values":[2369582]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[508]},{"unit":"ns/op","values":[2365445]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[504]},{"unit":"ns/op","values":[2361465]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2367304]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[510]},{"unit":"ns/op","values":[2353910]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[505]},{"unit":"ns/op","values":[2367590]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[506]},{"unit":"ns/op","values":[2362720]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[326]},{"unit":"ns/op","values":[3666897]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[322]},{"unit":"ns/op","values":[3677963]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[320]},{"unit":"ns/op","values":[3699884]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[306]},{"unit":"ns/op","values":[3752856]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[325,326,325,325,326,326,325,325,326,325]},{"unit":"ns/op","values":[3702097,3679120,3676559,3677024,3674602,3665635,3678990,3676269,3664849,3675308]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[326,325,325,325,325,326,326,326,326,326]},{"unit":"ns/op","values":[3667975,3682363,3675487,3675112,3685015,3665871,3669012,3672817,3762290,3681366]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[319,325,326,325,325,326,326,325,325,326]},{"unit":"ns/op","values":[3699661,3684060,3670218,3675953,3677169,3668369,3671739,3679698,3677854,3669598]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[326,327,326,326,326,326,326,326,326,326]},{"unit":"ns/op","values":[3672289,3668273,3669081,3694058,3676868,3669272,3668858,3678766,3673215,3671843]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[326,325,324,325,325,326,326,326,325,325]},{"unit":"ns/op","values":[3673625,3680317,3681925,3678069,3679485,3670018,3678575,3674419,3680982,3675616]}]}]},{"name":"BubbleSort/length=256-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[22846]},{"unit":"ns/op","values":[52535]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[23151]},{"unit":"ns/op","values":[52140]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[18460]},{"unit":"ns/op","values":[65092]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[23047]},{"unit":"ns/op","values":[52953]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[22125]},{"unit":"ns/op","values":[54310]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[22168]},{"unit":"ns/op","values":[53200]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[22713]},{"unit":"ns/op","values":[52798]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[22362]},{"unit":"ns/op","values":[54232]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[22663]},{"unit":"ns/op","values":[53048]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[22815]},{"unit":"ns/op","values":[53235]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[22071]},{"unit":"ns/op","values":[53417]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[22264]},{"unit":"ns/op","values":[54022]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[22309]},{"unit":"ns/op","values":[53712]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[21718]},{"unit":"ns/op","values":[54369]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[23086]},{"unit":"ns/op","values":[52523]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[23173]},{"unit":"ns/op","values":[51843]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[22554]},{"unit":"ns/op","values":[54065]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[22231]},{"unit":"ns/op","values":[53886]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[22336]},{"unit":"ns/op","values":[52656]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[22154]},{"unit":"ns/op","values":[53844]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[22204]},{"unit":"ns/op","values":[53763]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[15555]},{"unit":"ns/op","values":[76535]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[15933]},{"unit":"ns/op","values":[75781]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[15163]},{"unit":"ns/op","values":[78779]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[15804]},{"unit":"ns/op","values":[75573]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[15962,15315,15784,15924,15783,15596,16003,16208,15763,15973]},{"unit":"ns/op","values":[76233,76937,76106,75760,75433,76772,74907,74408,76605,75879]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[15673,15939,15960,15494,15963,16125,16036,15970,16112,15648]},{"unit":"ns/op","values":[75820,74907,76113,77284,75593,75145,75260,75209,74782,76079]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[15675,15781,15844,16045,15961,15949,15890,15937,15775,15866]},{"unit":"ns/op","values":[77259,75634,76182,74699,75428,75524,75347,75580,76272,76118]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[15490,15742,16071,15784,15668,15741,15892,15747,15807,15960]},{"unit":"ns/op","values":[77337,76107,74790,75671,75602,76439,75679,76576,75930,75265]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[16189,16090,16038,16213,15955,15861,16026,15710,16170,15889]},{"unit":"ns/op","values":[74454,74980,74904,74251,74619,74722,74024,76848,74775,75131]}]}]},{"name":"BubbleSort/length=4096-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[130]},{"unit":"ns/op","values":[9155391]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9218691]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[124]},{"unit":"ns/op","values":[9575946]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9202408]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9248165]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9215035]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9185027]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[120]},{"unit":"ns/op","values":[9877644]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9195869]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9293581]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9225676]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9255715]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[127]},{"unit":"ns/op","values":[9343768]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[121]},{"unit":"ns/op","values":[9702491]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9189469]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9199552]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9216914]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9256286]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9168330]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[128]},{"unit":"ns/op","values":[9299063]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[129]},{"unit":"ns/op","values":[9193263]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[80]},{"unit":"ns/op","values":[14448069]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[80]},{"unit":"ns/op","values":[14466744]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[81]},{"unit":"ns/op","values":[14537588]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[81]},{"unit":"ns/op","values":[14518252]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[80,82,80,82,82,80,82,82,80,81]},{"unit":"ns/op","values":[14464772,14449431,14505013,14469057,14450668,14452165,14482984,14468163,14455399,14473673]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[81,81,82,80,80,80,80,81,82,82]},{"unit":"ns/op","values":[14440428,14494016,14465298,14466061,14465104,14443132,14456608,14445212,14434203,14426967]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[79,81,81,81,81,81,81,81,80,81]},{"unit":"ns/op","values":[14447498,14441378,14440928,14448292,14451215,14470998,14445184,14458345,14480502,14474504]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[80,82,80,80,82,80,80,81,82,81]},{"unit":"ns/op","values":[14434007,14425630,14449425,14593850,14408583,14464214,14493122,14460762,14477109,14486668]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[81,82,82,81,82,82,81,81,80,82]},{"unit":"ns/op","values":[14465437,14450458,14462083,14463787,14467288,14454134,14452195,14486047,14450784,14432486]}]}]},{"name":"BubbleSort/length=512-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[6894]},{"unit":"ns/op","values":[168226]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[7087]},{"unit":"ns/op","values":[169339]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[6002]},{"unit":"ns/op","values":[200555]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[6895]},{"unit":"ns/op","values":[170649]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[7040]},{"unit":"ns/op","values":[169833]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[6729]},{"unit":"ns/op","values":[171279]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[7140]},{"unit":"ns/op","values":[170068]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[6828]},{"unit":"ns/op","values":[170212]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[6970]},{"unit":"ns/op","values":[172537]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[7014]},{"unit":"ns/op","values":[169344]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[6928]},{"unit":"ns/op","values":[179861]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[6972]},{"unit":"ns/op","values":[175063]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[6573]},{"unit":"ns/op","values":[170736]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[6868]},{"unit":"ns/op","values":[170642]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[7078]},{"unit":"ns/op","values":[171208]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[7068]},{"unit":"ns/op","values":[169261]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[7023]},{"unit":"ns/op","values":[171297]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[6522]},{"unit":"ns/op","values":[169408]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[7023]},{"unit":"ns/op","values":[171964]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[7009]},{"unit":"ns/op","values":[169405]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[7042]},{"unit":"ns/op","values":[170318]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[4605]},{"unit":"ns/op","values":[248390]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[4682]},{"unit":"ns/op","values":[252236]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[4705]},{"unit":"ns/op","values":[250728]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[4694]},{"unit":"ns/op","values":[255042]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[4846,4748,4653,4729,4722,4740,4770,4683,4716,4654]},{"unit":"ns/op","values":[251478,249196,251496,251113,249614,249660,249176,249732,250249,253619]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[4737,4760,4806,4513,4684,4830,4677,4850,4689,4852]},{"unit":"ns/op","values":[248984,252419,255329,248376,252467,251188,250588,253109,251955,250933]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[4641,4755,4714,4724,4765,4783,4672,4821,4687,4696]},{"unit":"ns/op","values":[249327,250665,250989,250606,251324,251313,250553,249438,250045,255034]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[4668,4804,4639,4767,4579,4818,4707,4849,4716,4825]},{"unit":"ns/op","values":[253321,251429,252147,252599,251079,251605,251718,248860,251893,250154]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[4756,4749,4774,4638,4806,4844,4755,4693,4788,4802]},{"unit":"ns/op","values":[249060,249614,250149,253952,250608,251007,252700,252050,248748,252255]}]}]},{"name":"BubbleSort/length=8192-4","measurements":[{"commit_hash":"3dfa57ad3f5059c1c16f97d555ab48c157474f2b","metrics":[{"unit":"iterations","values":[34]},{"unit":"ns/op","values":[36447866]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"6c705a169774d0ffca165096a5a0ac32b09371c6","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36454446]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"a02e9ddbec74f352f9dc5e901ed4d69908019ba6","metrics":[{"unit":"iterations","values":[30]},{"unit":"ns/op","values":[39383757]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"73fa787da4e3029b50fcd6a2c74e618f54e0c722","metrics":[{"unit":"iterations","values":[31]},{"unit":"ns/op","values":[36667801]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"e357da8dc3428ef8b4c07dc4aa81d3330c06d5ff","metrics":[{"unit":"iterations","values":[32]},{"unit":"ns/op","values":[36594154]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b3942e5581d6412924fa1230edbc2615cc3d05c1","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36419458]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7b4fb0cf0d69cb598425de2d8cc3b608f994a22b","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36415791]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"28e1d57e88c27c4a7b80923a16ddacc269a6de2d","metrics":[{"unit":"iterations","values":[30]},{"unit":"ns/op","values":[36644208]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"b4a58fc1c54c93c9efd92c73ed125d2f65d25d31","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36463444]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"f3e8e960d1745a2ab3d200c4ce4af79c0f1408ef","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36597975]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"370f1ddbc03a51779709cf2a84d87900a2a1a5c4","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36586130]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"eff88dd7b6da006ad8142e3485e1c7221f5ee0ca","metrics":[{"unit":"iterations","values":[34]},{"unit":"ns/op","values":[36512694]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"d337afa6d96d2d256b8c6457687af397988049fc","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36585048]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0feb74bc0031c6b7bdf19a74067c9fcc4a763de7","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36345552]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"20c2229a21e17e14c71c40a7a953c02f64a9c941","metrics":[{"unit":"iterations","values":[32]},{"unit":"ns/op","values":[36588459]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"57158c8701d402339447222df06d1aca908c6ed0","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36919263]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"1887329a882efb88e19444edf1d895f384fdabf8","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36680186]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"9d2343e273d4ab1969fadfdca2c3241ed7d014ee","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36622110]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"7e0a4daf9667ee7946516b5923769933aeb4abaf","metrics":[{"unit":"iterations","values":[32]},{"unit":"ns/op","values":[36556995]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"5a59bfb8db9b44e4fbf52ce3c37bb97fc3f1d020","metrics":[{"unit":"iterations","values":[31]},{"unit":"ns/op","values":[36764771]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"58b028a6d2b1f3da84976c77cfaea22797bea51e","metrics":[{"unit":"iterations","values":[33]},{"unit":"ns/op","values":[36555491]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"671458856b20d71e263df6e3a7e2760801f14564","metrics":[{"unit":"iterations","values":[20]},{"unit":"ns/op","values":[57499422]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"697b7c2def9219afececc5e9785d8baff0f95303","metrics":[{"unit":"iterations","values":[20]},{"unit":"ns/op","values":[57454575]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"169e31fb702557b3468c00ca21ab99e34d466520","metrics":[{"unit":"iterations","values":[20]},{"unit":"ns/op","values":[57644051]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0d5aa29ea3c012f74b9eaf9577b1f93014db2944","metrics":[{"unit":"iterations","values":[20]},{"unit":"ns/op","values":[57634815]},{"unit":"B/op","values":[0]},{"unit":"allocs/op","values":[0]}]},{"commit_hash":"0aece1805dd40a901fa635c62221dbbadee13929","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[20,20,20,20,20,20,20,20,20,20]},{"unit":"ns/op","values":[57458309,57408711,57455793,57430317,57360552,57381500,57472416,57446881,58346968,57476212]}]},{"commit_hash":"4697b85151299fd25cecfcdbe445f1c97d736214","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[19,20,20,20,20,20,20,20,20,20]},{"unit":"ns/op","values":[57509602,57411146,57414540,57388365,57516503,57479982,57521546,57462134,57455635,57477074]}]},{"commit_hash":"6219d4cfb9a7c245d3423789144301730361a25e","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[20,20,20,20,20,20,20,20,20,20]},{"unit":"ns/op","values":[57500572,57502828,57453407,57492389,57460873,57625854,57381868,57453741,57380936,57459000]}]},{"commit_hash":"cc0bed10ce0e24dcc9122805d5443ab29ddd75a2","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[20,20,20,20,20,20,20,20,20,20]},{"unit":"ns/op","values":[57538362,57498274,57463993,57458693,57507129,57545207,58517248,57630605,57461268,57598726]}]},{"commit_hash":"afc9853be4f880e57563943b25f602fffb5af066","metrics":[{"unit":"B/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"allocs/op","values":[0,0,0,0,0,0,0,0,0,0]},{"unit":"iterations","values":[20,20,20,20,20,20,20,20,19,20]},{"unit":"ns/op","values":[57424235,57479260,57593547,57480886,57449176,57506663,57404400,57640056,57804651,57435159]}]}]}];
+
+        class BenchmarkVisualizer {
+            constructor() {
+                this.data = [];
+                this.filteredData = [];
+                this.charts = new Map();
+                this.comparisonState = new Map();
+                this.chartTypes = new Map(); 
+                this.colors = [
+                    'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
+                    'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
+                    'hsl(173.4 58.9% 39.1%)', 'hsl(43.3 96.4% 56.3%)', 'hsl(197.4 71.4% 73.3%)',
+                    'hsl(20.5 90.2% 48.2%)'
+                ];
+            }
+
+            init() {
+                this.loadData();
+                this.setupGlobalEventListeners();
+                this.filteredData = [...this.data];
+                this.renderCharts();
+            }
+
+            
+            createSafeId(seriesName) {
+                return seriesName.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+
+            loadData() {
+                try {
+                    this.data = window.BENCHMARK_DATA || [];
+                } catch (error) {
+                    console.error('Failed to load benchmark data:', error);
+                    this.data = [];
+                    this.showError('Failed to load benchmark data.');
+                }
+            }
+
+            showError(message) {
+                document.getElementById('chartsContainer').innerHTML =
+                    `<div class="no-results">${message}</div>`;
+            }
+
+            setupGlobalEventListeners() {
+                const filterInput = document.getElementById('benchmarkFilter');
+                const clearButton = document.getElementById('clearFilter');
+
+                filterInput.addEventListener('input', (e) => this.filterBenchmarks(e.target.value));
+                clearButton.addEventListener('click', () => {
+                    filterInput.value = '';
+                    this.filterBenchmarks('');
+                });
+
+                window.addEventListener('resize', () => {
+                    this.charts.forEach(chart => chart.resize());
+                });
+            }
+
+            filterBenchmarks(query) {
+                if (!query.trim()) {
+                    this.filteredData = [...this.data];
+                } else {
+                    const lowerQuery = query.toLowerCase();
+                    this.filteredData = this.data.filter(series =>
+                        series.name.toLowerCase().includes(lowerQuery)
+                    );
+                }
+                this.renderCharts();
+            }
+
+            renderCharts() {
+                const container = document.getElementById('chartsContainer');
+                container.innerHTML = '';
+                this.charts.clear();
+
+                if (this.filteredData.length === 0) {
+                    if (this.data.length === 0) {
+                        this.showError('No benchmark data available.');
+                    } else {
+                        this.showError('No benchmarks found matching the filter.');
+                    }
+                    return;
+                }
+
+                this.filteredData.forEach((series, index) => {
+                    this.createChart(series, container, index);
+                });
+            }
+
+            createChart(series, container, index) {
+                const safeId = this.createSafeId(series.name);
+                const units = this.getUnitsForSeries(series);
+
+                const chartDiv = document.createElement('div');
+                chartDiv.className = 'chart-card';
+                chartDiv.innerHTML = this.createChartHTML(series, units, safeId);
+
+                container.appendChild(chartDiv);
+
+                
+                setTimeout(() => this.initializeChart(chartDiv, series, index, units[0]), 10);
+            }
+
+            createChartHTML(series, units, safeId) {
+                const tabsHtml = units.map((unit, index) =>
+                    `<button class="unit-tab ${index === 0 ? 'active' : ''}" data-unit="${unit}">
+                        ${unit}
+                    </button>`
+                ).join('');
+
+                return `
+                    <div class="chart-header">
+                        <h2 class="chart-title">${series.name}</h2>
+                        <button class="fullscreen-btn" data-chart="${series.name}">⛶</button>
+                    </div>
+                    <div class="tab-container">
+                        <div class="tabs-group">${tabsHtml}</div>
+                        <div class="buttons-group">
+                            <div class="chart-type-toggle">
+                                <button class="chart-type-btn active" data-type="line">Line</button>
+                                <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
+                            </div>
+                            <div class="action-buttons-row">
+                                <div class="icon-buttons-group">
+                                    <button class="action-button screenshot-btn" data-chart="${series.name}">📷</button>
+                                    <button class="action-button compare-btn" data-chart="${series.name}">📊</button>
+                                </div>
+                                <label class="scale-checkbox">
+                                    <input type="checkbox" id="scale-${safeId}" checked>
+                                    <span>Scale Y-axis</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="comparison-info" id="comparison-${safeId}"></div>
+                    <div class="chart-wrapper"></div>
+                    <div class="stats-info" id="stats-${safeId}"></div>
+                `;
+            }
+
+            initializeChart(chartDiv, series, index, defaultUnit) {
+                const chartWrapper = chartDiv.querySelector('.chart-wrapper');
+                const chart = echarts.init(chartWrapper);
+                const safeId = this.createSafeId(series.name);
+
+                this.charts.set(series.name, chart);
+                this.setupChartEventListeners(chartDiv, series, chart, index);
+                this.renderChartForUnit(series, defaultUnit, chart, index);
+            }
+
+            setupChartEventListeners(chartDiv, series, chart, index) {
+                const safeId = this.createSafeId(series.name);
+
+                
+                chartDiv.querySelectorAll('.chart-type-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.chart-type-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const chartType = e.target.dataset.type;
+                        this.chartTypes.set(series.name, chartType);
+
+                        
+                        const compareBtn = chartDiv.querySelector('.compare-btn');
+                        if (this.comparisonState.has(series.name)) {
+                            this.exitComparisonMode(series.name, compareBtn);
+                        }
+
+                        
+                        if (chartType === 'boxplot') {
+                            compareBtn.style.opacity = '0.5';
+                            compareBtn.style.pointerEvents = 'none';
+                        } else {
+                            compareBtn.style.opacity = '1';
+                            compareBtn.style.pointerEvents = 'auto';
+                        }
+
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                        }
+                    });
+                });
+
+                
+                chartDiv.querySelectorAll('.unit-tab').forEach(tab => {
+                    tab.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.unit-tab').forEach(t => t.classList.remove('active'));
+                        e.target.classList.add('active');
+                        this.renderChartForUnit(series, e.target.dataset.unit, chart, index);
+                    });
+                });
+
+                
+                const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                scaleCheckbox?.addEventListener('change', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    if (activeTab) {
+                        this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                    }
+                });
+
+                
+                chartDiv.querySelector('.fullscreen-btn')?.addEventListener('click', () => {
+                    const activeTab = chartDiv.querySelector('.unit-tab.active');
+                    const scaleCheckbox = chartDiv.querySelector(`#scale-${safeId}`);
+                    if (activeTab) {
+                        this.openFullscreen(series, activeTab.dataset.unit, index, scaleCheckbox.checked);
+                    }
+                });
+
+                
+                chartDiv.querySelector('.screenshot-btn')?.addEventListener('click', () => {
+                    this.downloadScreenshot(chart, series.name);
+                });
+
+                
+                chartDiv.querySelector('.compare-btn')?.addEventListener('click', (e) => {
+                    this.toggleComparisonMode(series.name, e.target);
+                });
+            }
+
+            renderChartForUnit(series, unit, chart, index) {
+                const chartType = this.chartTypes.get(series.name) || 'line';
+                const data = this.extractChartData(series, unit);
+                const shouldScale = this.shouldScaleChart(series.name);
+
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                chart.setOption(option, true);
+                this.updateStatistics(series.name, data.values, unit);
+
+                
+                if (chartType === 'line') {
+                    this.setupChartClickHandler(chart, series.name, unit, data);
+                } else if (chartType === 'boxplot') {
+                    this.setupBoxPlotClickHandler(chart, data);
+                }
+            }
+
+            extractChartData(series, unit) {
+                const plotData = [];
+                const commitHashes = [];
+                const allValues = []; 
+                const valuesByCommit = []; 
+
+                series.measurements.forEach(measurement => {
+                    const metric = measurement.metrics.find(m => m.unit === unit);
+                    if (metric && metric.values) {
+                        const shortHash = measurement.commit_hash.substring(0, 8);
+
+                        
+                        const mean = metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+
+                        plotData.push([shortHash, mean]);
+                        commitHashes.push(measurement.commit_hash);
+                        allValues.push(...metric.values); 
+                        valuesByCommit.push({
+                            shortHash,
+                            fullHash: measurement.commit_hash,
+                            values: metric.values
+                        });
+                    }
+                });
+
+                return { plotData, commitHashes, values: allValues, valuesByCommit };
+            }
+
+            shouldScaleChart(seriesName) {
+                const safeId = this.createSafeId(seriesName);
+                const checkbox = document.getElementById(`scale-${safeId}`);
+                return checkbox ? checkbox.checked : true;
+            }
+
+            createChartOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                return {
+                    animation: true,
+                    tooltip: this.createTooltipConfig(unit, data),
+                    xAxis: this.createXAxisConfig(),
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [{
+                        name: series.name,
+                        type: 'line',
+                        data: data.plotData,
+                        symbol: 'circle',
+                        symbolSize: 7,
+                        smooth: true,
+                        lineStyle: { width: 2, color: color },
+                        itemStyle: { color: color },
+                        emphasis: { disabled: true },
+                        blur: { disabled: true },
+                        select: { disabled: true }
+                    }]
+                };
+            }
+
+            createTooltipConfig(unit, data) {
+                return {
+                    trigger: 'item',
+                    backgroundColor: 'hsl(0 0% 100%)',
+                    borderColor: 'hsl(214.3 31.8% 91.4%)',
+                    borderWidth: 1,
+                    textStyle: {
+                        color: 'hsl(222.2 84% 4.9%)',
+                        fontSize: 12,
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    formatter: (params) => {
+                        const currentValue = params.value[1];
+                        const dataIndex = params.dataIndex;
+
+                        
+                        const commitData = data.valuesByCommit[dataIndex];
+                        const sampleCount = commitData ? commitData.values.length : 0;
+
+                        let tooltip = `Commit: ${params.name}<br/>Mean: ${currentValue.toLocaleString()} ${unit}`;
+
+                        if (sampleCount > 0) {
+                            tooltip += `<br/>Samples: ${sampleCount}`;
+                        }
+
+                        if (dataIndex > 0) {
+                            const previousValue = data.plotData[dataIndex - 1][1];
+                            const percentChange = ((currentValue - previousValue) / previousValue * 100);
+                            const changeSign = percentChange > 0 ? '+' : '';
+                            tooltip += `<br/><span style="font-weight: 500;">
+                                ${changeSign}${percentChange.toFixed(2)}% from previous
+                            </span>`;
+                        }
+                        return tooltip;
+                    }
+                };
+            }
+
+            createXAxisConfig() {
+                return {
+                    type: 'category',
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        rotate: 45, fontSize: 11,
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    }
+                };
+            }
+
+            createYAxisConfig(unit, shouldScale) {
+                return {
+                    type: 'value',
+                    scale: shouldScale,
+                    name: unit,
+                    nameLocation: 'middle',
+                    nameGap: 40,
+                    nameTextStyle: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontFamily: 'JetBrains Mono, monospace'
+                    },
+                    axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                    axisLabel: {
+                        color: 'hsl(215.4 16.3% 46.9%)',
+                        fontSize: 11,
+                        fontFamily: 'JetBrains Mono, monospace',
+                        formatter: (value) => {
+                            if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M';
+                            if (value >= 1000) return (value / 1000).toFixed(1) + 'K';
+                            return value.toLocaleString();
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: { color: 'hsl(214.3 31.8% 91.4%)', type: 'dashed' }
+                    }
+                };
+            }
+
+            
+            darkenColor(hslColor, amount) {
+                
+                const match = hslColor.match(/hsl\(([^)]+)\)/);
+                if (!match) return hslColor;
+
+                const parts = match[1].split(/\s+/);
+                const h = parseFloat(parts[0]);
+                const s = parseFloat(parts[1]);
+                const l = parseFloat(parts[2]);
+
+                
+                const newL = Math.max(0, l - (l * amount));
+
+                return `hsla(${h}, ${s}%, ${newL}%, 0.3)`;
+            }
+
+            
+            calculateBoxPlotData(values) {
+                if (values.length === 0) return null;
+
+                const sorted = [...values].sort((a, b) => a - b);
+                const n = sorted.length;
+
+                const min = sorted[0];
+                const max = sorted[n - 1];
+
+                const median = n % 2 === 0
+                    ? (sorted[n / 2 - 1] + sorted[n / 2]) / 2
+                    : sorted[Math.floor(n / 2)];
+
+                const q1Index = Math.floor(n * 0.25);
+                const q1 = sorted[q1Index];
+
+                const q3Index = Math.floor(n * 0.75);
+                const q3 = sorted[q3Index];
+
+                const iqr = q3 - q1;
+
+                return {
+                    boxData: [min, q1, median, q3, max],
+                    stats: { min, q1, median, q3, max, iqr }
+                };
+            }
+
+            createBoxPlotOption(series, unit, data, index, shouldScale) {
+                const color = this.colors[index % this.colors.length];
+
+                
+                const darkerColor = this.darkenColor(color, 0.3);
+
+                if (!data.valuesByCommit || data.valuesByCommit.length === 0) {
+                    return this.createChartOption(series, unit, data, index, shouldScale);
+                }
+
+                
+                const commitLabels = [];
+                const boxPlotDataPoints = [];
+
+                data.valuesByCommit.forEach((commit, commitIndex) => {
+                    const boxData = this.calculateBoxPlotData(commit.values);
+                    if (boxData) {
+                        commitLabels.push(commit.shortHash);
+                        boxPlotDataPoints.push(boxData.boxData);
+                    }
+                });
+
+                return {
+                    animation: true,
+                    tooltip: {
+                        trigger: 'item',
+                        backgroundColor: 'hsl(0 0% 100%)',
+                        borderColor: 'hsl(214.3 31.8% 91.4%)',
+                        borderWidth: 1,
+                        textStyle: {
+                            color: 'hsl(222.2 84% 4.9%)',
+                            fontSize: 12,
+                            fontFamily: 'JetBrains Mono, monospace'
+                        },
+                        formatter: (params) => {
+                            
+                            const [_, min, q1, median, q3, max] = params.value;
+                            const commitHash = commitLabels[params.dataIndex];
+                            return `
+                                <strong>Commit: ${commitHash}</strong><br/>
+                                Max: ${max.toLocaleString()} ${unit}<br/>
+                                Q3: ${q3.toLocaleString()} ${unit}<br/>
+                                Median: ${median.toLocaleString()} ${unit}<br/>
+                                Q1: ${q1.toLocaleString()} ${unit}<br/>
+                                Min: ${min.toLocaleString()} ${unit}
+                            `;
+                        }
+                    },
+                    xAxis: {
+                        type: 'category',
+                        data: commitLabels,
+                        axisLine: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisTick: { lineStyle: { color: 'hsl(214.3 31.8% 91.4%)' } },
+                        axisLabel: {
+                            rotate: 45,
+                            fontSize: 11,
+                            color: 'hsl(215.4 16.3% 46.9%)',
+                            fontFamily: 'JetBrains Mono, monospace'
+                        }
+                    },
+                    yAxis: this.createYAxisConfig(unit, shouldScale),
+                    grid: {
+                        left: '5%', right: '5%', top: '15px', bottom: '15px', containLabel: true
+                    },
+                    series: [
+                        {
+                            name: series.name,
+                            type: 'boxplot',
+                            data: boxPlotDataPoints,
+                            itemStyle: {
+                                borderColor: color,
+                                borderWidth: 2,
+                                color: darkerColor
+                            },
+                            emphasis: {
+                                disabled: true
+                            }
+                        }
+                    ]
+                };
+            }
+
+            setupChartClickHandler(chart, seriesName, unit, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.seriesType === 'line') {
+                        const comparisonHandled = this.handleComparisonClick(seriesName, params, unit, data);
+                        if (!comparisonHandled) {
+                            this.openCommitUrl(data.commitHashes[params.dataIndex]);
+                        }
+                    }
+                });
+            }
+
+            setupBoxPlotClickHandler(chart, data) {
+                chart.off('click');
+                chart.on('click', (params) => {
+                    if (params.componentType === 'series' && params.componentSubType === 'boxplot') {
+                        const commitHash = data.valuesByCommit[params.dataIndex].fullHash;
+                        this.openCommitUrl(commitHash);
+                    }
+                });
+            }
+
+            openCommitUrl(commitHash) {
+                const repoUrl = this.getRepositoryUrl();
+                if (repoUrl && commitHash) {
+                    window.open(`${repoUrl}/commit/${commitHash}`, '_blank');
+                }
+            }
+
+            getRepositoryUrl() {
+                const hostname = window.location.hostname;
+                if (hostname.endsWith('.github.io')) {
+                    const parts = hostname.split('.');
+                    if (parts.length >= 3) {
+                        const username = parts[0];
+                        const repoName = window.location.pathname.split('/')[1] || parts[1];
+                        return `https://github.com/${username}/${repoName}`;
+                    }
+                }
+                if (window.location.href.includes('github.com')) {
+                    const match = window.location.href.match(/github\.com\/([^\/]+\/[^\/]+)/);
+                    if (match) return `https://github.com/${match[1]}`;
+                }
+                return 'https://github.com/dkharms/chronos';
+            }
+
+            updateStatistics(seriesName, values, unit) {
+                const safeId = this.createSafeId(seriesName);
+                const statsDiv = document.getElementById(`stats-${safeId}`);
+                if (!statsDiv || values.length === 0) return;
+
+                const min = Math.min(...values);
+                const max = Math.max(...values);
+                const mean = values.reduce((sum, val) => sum + val, 0) / values.length;
+                const variance = values.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / values.length;
+                const stdDev = Math.sqrt(variance);
+                const cv = (stdDev / mean) * 100;
+
+                const formatValue = (value) => {
+                    if (value >= 1000000) return (value / 1000000).toFixed(2) + 'M';
+                    if (value >= 1000) return (value / 1000).toFixed(2) + 'K';
+                    return value.toLocaleString(undefined, {maximumFractionDigits: 2});
+                };
+
+                statsDiv.innerHTML = `
+                    <table class="stats-table">
+                        <thead>
+                            <tr><th>Min</th><th>Max</th><th>Mean</th><th>Std Dev</th><th>CV %</th></tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>${formatValue(min)} ${unit}</td>
+                                <td>${formatValue(max)} ${unit}</td>
+                                <td>${formatValue(mean)} ${unit}</td>
+                                <td>${formatValue(stdDev)} ${unit}</td>
+                                <td>${cv.toFixed(1)}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            }
+
+            openFullscreen(series, unit, index, shouldScale) {
+                const modal = document.getElementById('chartModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const modalChart = document.getElementById('modalChart');
+                const modalClose = document.getElementById('modalClose');
+
+                
+                modalTitle.textContent = `${series.name} - ${unit}`;
+
+                
+                modal.classList.add('active');
+
+                
+                const chartInstance = echarts.init(modalChart);
+
+                
+                const chartType = this.chartTypes.get(series.name) || 'line';
+
+                
+                const data = this.extractChartData(series, unit);
+
+                
+                let option;
+                if (chartType === 'boxplot') {
+                    option = this.createBoxPlotOption(series, unit, data, index, shouldScale);
+                    this.setupBoxPlotClickHandler(chartInstance, data);
+                } else {
+                    option = this.createChartOption(series, unit, data, index, shouldScale);
+                    this.setupChartClickHandler(chartInstance, series.name, unit, data);
+                }
+
+                chartInstance.setOption(option);
+
+                
+                const closeModal = () => {
+                    modal.classList.remove('active');
+                    chartInstance.dispose();
+                };
+
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
+
+                
+                const escHandler = (e) => {
+                    if (e.key === 'Escape') {
+                        closeModal();
+                        document.removeEventListener('keydown', escHandler);
+                    }
+                };
+                document.addEventListener('keydown', escHandler);
+
+                
+                const resizeHandler = () => {
+                    if (modal.classList.contains('active')) {
+                        chartInstance.resize();
+                    }
+                };
+                window.addEventListener('resize', resizeHandler);
+
+                
+                const originalClose = closeModal;
+                closeModal = () => {
+                    window.removeEventListener('resize', resizeHandler);
+                    originalClose();
+                };
+                modalClose.onclick = closeModal;
+                modal.onclick = (e) => {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                };
+            }
+
+            downloadScreenshot(chart, chartName) {
+                try {
+                    
+                    const chartDataURL = chart.getDataURL({
+                        type: 'png', pixelRatio: 2, backgroundColor: '#ffffff'
+                    });
+
+                    
+                    const safeId = this.createSafeId(chartName);
+                    const statsTable = document.getElementById(`stats-${safeId}`).querySelector('.stats-table');
+
+                    
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+
+                    
+                    const chartImg = new Image();
+                    chartImg.onload = () => {
+                        
+                        const tableHeight = 80; 
+                        const spacing = 10; 
+                        canvas.width = chartImg.width;
+                        canvas.height = chartImg.height + tableHeight + spacing;
+
+                        
+                        ctx.fillStyle = '#ffffff';
+                        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                        
+                        ctx.drawImage(chartImg, 0, 0);
+
+                        
+                        this.drawTableToCanvas(ctx, statsTable, 0, chartImg.height + spacing, canvas.width, tableHeight)
+                            .then(() => {
+                                
+                                const link = document.createElement('a');
+                                link.download = `${chartName.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_chart.png`;
+                                link.href = canvas.toDataURL('image/png');
+                                link.click();
+                            });
+                    };
+                    chartImg.src = chartDataURL;
+
+                } catch (error) {
+                    console.error('Screenshot failed:', error);
+                    alert('Failed to save screenshot. Please try again.');
+                }
+            }
+
+            async drawTableToCanvas(ctx, table, x, y, width, height) {
+                return new Promise((resolve) => {
+                    
+                    const rows = table.querySelectorAll('tr');
+                    const cellData = [];
+
+                    rows.forEach(row => {
+                        const cells = row.querySelectorAll('th, td');
+                        const rowData = Array.from(cells).map(cell => ({
+                            text: cell.textContent.trim(),
+                            isHeader: cell.tagName === 'TH'
+                        }));
+                        cellData.push(rowData);
+                    });
+
+                    
+                    const cellWidth = width / cellData[0].length;
+                    const cellHeight = height / cellData.length;
+
+                    
+                    ctx.strokeStyle = '#e2e8f0';
+                    ctx.lineWidth = 1;
+                    ctx.strokeRect(x, y, width, height);
+
+                    
+                    cellData.forEach((row, rowIndex) => {
+                        row.forEach((cell, colIndex) => {
+                            const cellX = x + colIndex * cellWidth;
+                            const cellY = y + rowIndex * cellHeight;
+
+                            
+                            if (cell.isHeader) {
+                                ctx.fillStyle = '#f8fafc';
+                                ctx.fillRect(cellX, cellY, cellWidth, cellHeight);
+                            }
+
+                            
+                            ctx.strokeStyle = '#e2e8f0';
+                            ctx.strokeRect(cellX, cellY, cellWidth, cellHeight);
+
+                            
+                            ctx.fillStyle = cell.isHeader ? '#64748b' : '#0f172a';
+                            ctx.font = cell.isHeader ? '600 11px "JetBrains Mono", monospace' : '500 12px "JetBrains Mono", monospace';
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+
+                            const textX = cellX + cellWidth / 2;
+                            const textY = cellY + cellHeight / 2;
+                            ctx.fillText(cell.text, textX, textY);
+                        });
+                    });
+
+                    resolve();
+                });
+            }
+
+            toggleComparisonMode(chartName, button) {
+                const state = this.comparisonState.get(chartName) || { active: false, selectedPoints: [] };
+                if (state.active) {
+                    this.exitComparisonMode(chartName, button);
+                } else {
+                    this.enterComparisonMode(chartName, button);
+                }
+            }
+
+            enterComparisonMode(chartName, button) {
+                const state = { active: true, selectedPoints: [] };
+                this.comparisonState.set(chartName, state);
+                button.classList.add('active');
+                button.textContent = '❌';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.style.display = 'block';
+                comparisonInfo.innerHTML = '<strong>Comparison Mode:</strong> Click on two data points to compare them.';
+            }
+
+            exitComparisonMode(chartName, button) {
+                this.comparisonState.delete(chartName);
+                button.classList.remove('active');
+                button.textContent = '📊';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.style.display = 'none';
+
+                const chart = this.charts.get(chartName);
+                if (chart) {
+                    const option = chart.getOption();
+                    option.series[0].markPoint = undefined;
+                    chart.setOption(option);
+                }
+            }
+
+            handleComparisonClick(chartName, params, unit, data) {
+                const state = this.comparisonState.get(chartName);
+                if (!state || !state.active) return false;
+
+                const pointData = {
+                    index: params.dataIndex,
+                    commit: params.name,
+                    fullCommit: data.commitHashes[params.dataIndex],
+                    value: params.value[1]
+                };
+
+                if (state.selectedPoints.length === 0) {
+                    state.selectedPoints.push(pointData);
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
+                } else if (state.selectedPoints.length === 1) {
+                    state.selectedPoints.push(pointData);
+                    this.showComparison(chartName, state, unit);
+                } else {
+                    state.selectedPoints = [pointData];
+                    this.updateComparisonDisplay(chartName, state, 'first', unit);
+                }
+
+                this.highlightSelectedPoints(chartName, state);
+                return true;
+            }
+
+            updateComparisonDisplay(chartName, state, mode, unit) {
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                if (mode === 'first') {
+                    const point = state.selectedPoints[0];
+                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${point.value.toLocaleString()} ${unit})<br/><em>Click another point to compare.</em>`;
+                }
+            }
+
+            showComparison(chartName, state, unit) {
+                const [point1, point2] = state.selectedPoints;
+                const diff = point2.value - point1.value;
+                const percentChange = (diff / point1.value * 100);
+                const changeSign = diff > 0 ? '+' : '';
+
+                const safeId = this.createSafeId(chartName);
+                const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                comparisonInfo.innerHTML = `
+                    <strong>Comparison Results:</strong><br/>
+                    <strong>Point 1:</strong> ${point1.commit} → ${point1.value.toLocaleString()} ${unit}<br/>
+                    <strong>Point 2:</strong> ${point2.commit} → ${point2.value.toLocaleString()} ${unit}<br/>
+                    <strong>Difference:</strong> ${changeSign}${diff.toLocaleString()} ${unit} (${changeSign}${percentChange.toFixed(2)}%)
+                `;
+            }
+
+            highlightSelectedPoints(chartName, state) {
+                const chart = this.charts.get(chartName);
+                if (!chart) return;
+
+                const markPoints = state.selectedPoints.map((point, index) => ({
+                    coord: [point.index, point.value],
+                    symbol: 'pin',
+                    symbolSize: 30,
+                    itemStyle: { color: index === 0 ? '#3b82f6' : '#ef4444' },
+                    label: {
+                        show: true, position: 'top',
+                        formatter: `Point ${index + 1}`, color: '#000'
+                    }
+                }));
+
+                const option = chart.getOption();
+                option.series[0].markPoint = { data: markPoints };
+                chart.setOption(option);
+            }
+
+            getUnitsForSeries(series) {
+                const units = new Set();
+                series.measurements.forEach(measurement => {
+                    measurement.metrics.forEach(metric => units.add(metric.unit));
+                });
+                return Array.from(units).sort();
+            }
+        }
+
+        
+        function initializeWhenReady() {
+            if (typeof echarts !== 'undefined' && document.readyState === 'complete') {
+                const visualizer = new BenchmarkVisualizer();
+                visualizer.init();
+            } else {
+                setTimeout(initializeWhenReady, 50);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initializeWhenReady);
+        } else {
+            initializeWhenReady();
+        }
+    </script>
+</body>
+</html>
