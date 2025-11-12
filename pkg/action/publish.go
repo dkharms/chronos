@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"html/template"
 	"os"
-	"path"
+	"path/filepath"
 	"time"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
@@ -53,15 +53,15 @@ func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) 
 	return r.WithBranch(
 		ctx, cfg.GithubPages.Branch,
 		func() ([]string, string, error) {
-			filepath := path.Join(cfg.GithubPages.Path, "index.html")
-			return []string{filepath},
+			p := filepath.Join(cfg.GithubPages.Path, "index.html")
+			return []string{p},
 				fmt.Sprintf(ActionPublishCommitMessage, input.CommitHash),
-				saveIndexFile(filepath, series)
+				saveIndexFile(p, series)
 		},
 	)
 }
 
-func saveIndexFile(filepath string, series []benchmark.Series) error {
+func saveIndexFile(p string, series []benchmark.Series) error {
 	tmpl, err := template.New("index").Parse(htmlTemplate)
 	if err != nil {
 		return err
@@ -72,7 +72,12 @@ func saveIndexFile(filepath string, series []benchmark.Series) error {
 		return err
 	}
 
-	f, err := os.OpenFile(filepath, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	dir := filepath.Dir(p)
+	if err := os.MkdirAll(dir, os.ModePerm); err != nil {
+		return err
+	}
+
+	f, err := os.OpenFile(p, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
 	if err != nil {
 		return err
 	}
