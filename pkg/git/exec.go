@@ -43,8 +43,9 @@ func Commit(worktree *git.Worktree, message string) error {
 	}
 
 	_, err := worktree.Commit(message, &git.CommitOptions{
-		Author:    author,
-		Committer: author,
+		Author:            author,
+		Committer:         author,
+		AllowEmptyCommits: true,
 	})
 
 	return err
