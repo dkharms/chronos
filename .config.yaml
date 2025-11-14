@@ -1,8 +1,8 @@
-github_pages:
+github-pages:
   directory: benchmarks
 
 storage:
-  measurements_capacity: 25
+  capacity: 25
 
 units:
   - name: allocs/op
