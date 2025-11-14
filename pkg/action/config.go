@@ -4,12 +4,12 @@ type Config struct {
 	GithubPages struct {
 		Branch    string `fig:"branch" default:"gh-pages"`
 		Directory string `fig:"directory" default:"chronos"`
-	} `fig:"github_pages"`
+	} `fig:"github-pages"`
 
 	Storage struct {
-		// MeasurementsCapacity specifies how many latests measurements
+		// Capacity specifies how many latests measurements
 		// (or commits) for one individual series will be preserved.
-		MeasurementsCapacity int `fig:"measurements_capacity" default:"25"`
+		Capacity int `fig:"capacity" default:"25"`
 	} `fig:"storage"`
 
 	Units []struct {

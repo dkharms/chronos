@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"time"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
@@ -15,13 +14,12 @@ import (
 )
 
 const (
-	ActionSaveTimeout       = time.Minute
 	ChronosMergedFilename   = ".chronos"
 	ActionSaveCommitMessage = "[chronos] `save` (%s)"
 )
 
 func Save(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
-	return r.WithBranch(
+	err := r.WithBranch(
 		ctx, input.BranchStorage,
 		func() ([]string, string, error) {
 			return []string{ChronosMergedFilename},
@@ -29,6 +27,15 @@ func Save(ctx context.Context, r gitops.Repository, cfg Config, input Input) err
 				processBenchmarks(cfg, input)
 		},
 	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"cannot save benchmarks: %w",
+			err,
+		)
+	}
+
+	return nil
 }
 
 func processBenchmarks(cfg Config, gctx Input) error {
@@ -44,7 +51,7 @@ func processBenchmarks(cfg Config, gctx Input) error {
 
 	merged := benchmark.Merge(collected, incoming)
 	for i := range len(merged) {
-		sub := max(0, len(merged[i].Measurements)-cfg.Storage.MeasurementsCapacity)
+		sub := max(0, len(merged[i].Measurements)-cfg.Storage.Capacity)
 		merged[i].Measurements = merged[i].Measurements[sub:]
 	}
 

@@ -8,14 +8,12 @@ import (
 	"html/template"
 	"os"
 	"path/filepath"
-	"time"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
 )
 
 const (
-	ActionPublishTimeout       = 5 * time.Minute
 	ActionPublishCommitMessage = "[chronos] `publish` (%s)"
 )
 
@@ -25,13 +23,6 @@ var (
 )
 
 func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		ActionSaveTimeout,
-	)
-
-	defer cancel()
-
 	var series []benchmark.Series
 
 	err := r.WithBranch(
@@ -47,10 +38,13 @@ func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) 
 	)
 
 	if err != nil {
-		return err
+		return fmt.Errorf(
+			"cannot load collected benchmarks: %w",
+			err,
+		)
 	}
 
-	return r.WithBranch(
+	err = r.WithBranch(
 		ctx, cfg.GithubPages.Branch,
 		func() ([]string, string, error) {
 			p := filepath.Join(cfg.GithubPages.Directory, "index.html")
@@ -59,6 +53,15 @@ func Publish(ctx context.Context, r gitops.Repository, cfg Config, input Input) 
 				saveIndexFile(p, series)
 		},
 	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"cannot save rendered HTML page: %w",
+			err,
+		)
+	}
+
+	return nil
 }
 
 func saveIndexFile(p string, series []benchmark.Series) error {
