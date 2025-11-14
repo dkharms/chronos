@@ -3,16 +3,12 @@ package action
 import (
 	"context"
 	_ "embed"
-	"time"
+	"fmt"
 
 	"github.com/sethvargo/go-githubactions"
 
 	"github.com/dkharms/chronos/pkg/benchmark"
 	gitops "github.com/dkharms/chronos/pkg/git"
-)
-
-const (
-	ActionSummarizeTimeout = time.Minute
 )
 
 var (
@@ -21,17 +17,12 @@ var (
 )
 
 func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
-	ctx, cancel := context.WithTimeout(
-		context.Background(),
-		ActionSummarizeTimeout,
-	)
-
-	defer cancel()
-
-	return r.WithBranch(
+	err := r.WithBranch(
 		ctx, input.BranchStorage,
 		func() ([]string, string, error) {
-			incoming, err := loadIncomingBenchmarks(input.CommitHash, input.BenchmarksFilepath)
+			incoming, err := loadIncomingBenchmarks(
+				input.CommitHash, input.BenchmarksFilepath,
+			)
 			if err != nil {
 				return nil, "", err
 			}
@@ -46,4 +37,13 @@ func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input
 			)
 		},
 	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"cannot summarize benchmarks: %w",
+			err,
+		)
+	}
+
+	return nil
 }
