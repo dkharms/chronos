@@ -171,12 +171,16 @@
             display: flex;
             flex-wrap: wrap;
             align-items: center;
+            flex: 1;
+            min-width: 0;
         }
         .buttons-group {
             display: flex;
             flex-direction: column;
             gap: 8px;
             align-items: flex-end;
+            flex-shrink: 0;
+            min-width: fit-content;
         }
         .action-buttons-row {
             display: flex;
@@ -232,7 +236,7 @@
             padding: 2px;
             background: hsl(210 40% 98%);
         }
-        .chart-type-btn {
+        .chart-type-btn, .reduction-btn {
             background: transparent;
             border: none;
             border-radius: 4px;
@@ -243,10 +247,10 @@
             color: hsl(215.4 16.3% 46.9%);
             transition: all 0.2s ease;
         }
-        .chart-type-btn:hover {
+        .chart-type-btn:hover, .reduction-btn:hover {
             color: hsl(222.2 84% 4.9%);
         }
-        .chart-type-btn.active {
+        .chart-type-btn.active, .reduction-btn.active {
             background: hsl(0 0% 100%);
             color: hsl(222.2 84% 4.9%);
             box-shadow: 0 1px 2px 0 hsl(0 0% 0% / 0.05);
@@ -433,6 +437,7 @@
                 this.charts = new Map();
                 this.comparisonState = new Map();
                 this.chartTypes = new Map(); // Track chart type per series (line or boxplot)
+                this.reductionFunctions = new Map(); // Track reduction function per series (mean, min, max, median)
                 this.colors = [
                     'hsl(221.2 83.2% 53.3%)', 'hsl(142.1 76.2% 36.3%)', 'hsl(346.8 77.2% 49.8%)',
                     'hsl(258.3 89.5% 66.3%)', 'hsl(24.6 95% 53.1%)', 'hsl(262.1 83.3% 57.8%)',
@@ -451,6 +456,41 @@
             // Helper method to create safe IDs from series names
             createSafeId(seriesName) {
                 return seriesName.replace(/[^a-zA-Z0-9]/g, '_');
+            }
+
+            // Reduction functions
+            computeMean(values) {
+                if (values.length === 0) return 0;
+                return values.reduce((sum, val) => sum + val, 0) / values.length;
+            }
+
+            computeMin(values) {
+                if (values.length === 0) return 0;
+                return Math.min(...values);
+            }
+
+            computeMax(values) {
+                if (values.length === 0) return 0;
+                return Math.max(...values);
+            }
+
+            computeMedian(values) {
+                if (values.length === 0) return 0;
+                const sorted = [...values].sort((a, b) => a - b);
+                const mid = Math.floor(sorted.length / 2);
+                return sorted.length % 2 === 0
+                    ? (sorted[mid - 1] + sorted[mid]) / 2
+                    : sorted[mid];
+            }
+
+            applyReduction(values, reductionType) {
+                switch (reductionType) {
+                    case 'min': return this.computeMin(values);
+                    case 'max': return this.computeMax(values);
+                    case 'median': return this.computeMedian(values);
+                    case 'mean':
+                    default: return this.computeMean(values);
+                }
             }
 
             loadData() {
@@ -547,6 +587,12 @@
                                 <button class="chart-type-btn active" data-type="line">Line</button>
                                 <button class="chart-type-btn" data-type="boxplot">Box Plot</button>
                             </div>
+                            <div class="chart-type-toggle">
+                                <button class="reduction-btn active" data-reduction="mean">Mean</button>
+                                <button class="reduction-btn" data-reduction="min">Min</button>
+                                <button class="reduction-btn" data-reduction="max">Max</button>
+                                <button class="reduction-btn" data-reduction="median">Median</button>
+                            </div>
                             <div class="action-buttons-row">
                                 <div class="icon-buttons-group">
                                     <button class="action-button screenshot-btn" data-chart="${series.name}">📷</button>
@@ -600,6 +646,35 @@
                             compareBtn.style.opacity = '1';
                             compareBtn.style.pointerEvents = 'auto';
                         }
+
+                        // Update reduction buttons visibility (disable for boxplot)
+                        const reductionBtns = chartDiv.querySelectorAll('.reduction-btn');
+                        if (chartType === 'boxplot') {
+                            reductionBtns.forEach(btn => {
+                                btn.style.opacity = '0.5';
+                                btn.style.pointerEvents = 'none';
+                            });
+                        } else {
+                            reductionBtns.forEach(btn => {
+                                btn.style.opacity = '1';
+                                btn.style.pointerEvents = 'auto';
+                            });
+                        }
+
+                        const activeTab = chartDiv.querySelector('.unit-tab.active');
+                        if (activeTab) {
+                            this.renderChartForUnit(series, activeTab.dataset.unit, chart, index);
+                        }
+                    });
+                });
+
+                // Reduction function toggle
+                chartDiv.querySelectorAll('.reduction-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        chartDiv.querySelectorAll('.reduction-btn').forEach(b => b.classList.remove('active'));
+                        e.target.classList.add('active');
+                        const reductionType = e.target.dataset.reduction;
+                        this.reductionFunctions.set(series.name, reductionType);
 
                         const activeTab = chartDiv.querySelector('.unit-tab.active');
                         if (activeTab) {
@@ -675,15 +750,18 @@
                 const allValues = []; // All individual values across all commits
                 const valuesByCommit = []; // Array of value arrays, one per commit
 
+                // Get the selected reduction function for this series (default to 'mean')
+                const reductionType = this.reductionFunctions.get(series.name) || 'mean';
+
                 series.measurements.forEach(measurement => {
                     const metric = measurement.metrics.find(m => m.unit === unit);
                     if (metric && metric.values) {
                         const shortHash = measurement.commit_hash.substring(0, 8);
 
-                        // Calculate mean for line chart
-                        const mean = metric.values.reduce((sum, val) => sum + val, 0) / metric.values.length;
+                        // Apply the selected reduction function
+                        const reducedValue = this.applyReduction(metric.values, reductionType);
 
-                        plotData.push([shortHash, mean]);
+                        plotData.push([shortHash, reducedValue]);
                         commitHashes.push(measurement.commit_hash);
                         allValues.push(...metric.values); // Flatten all values for overall stats
                         valuesByCommit.push({
@@ -705,10 +783,11 @@
 
             createChartOption(series, unit, data, index, shouldScale) {
                 const color = this.colors[index % this.colors.length];
+                const reductionType = this.reductionFunctions.get(series.name) || 'mean';
 
                 return {
                     animation: true,
-                    tooltip: this.createTooltipConfig(unit, data),
+                    tooltip: this.createTooltipConfig(unit, data, reductionType),
                     xAxis: this.createXAxisConfig(),
                     yAxis: this.createYAxisConfig(unit, shouldScale),
                     grid: {
@@ -730,7 +809,10 @@
                 };
             }
 
-            createTooltipConfig(unit, data) {
+            createTooltipConfig(unit, data, reductionType) {
+                // Capitalize the reduction type for display
+                const reductionLabel = reductionType.charAt(0).toUpperCase() + reductionType.slice(1);
+
                 return {
                     trigger: 'item',
                     backgroundColor: 'hsl(0 0% 100%)',
@@ -749,7 +831,7 @@
                         const commitData = data.valuesByCommit[dataIndex];
                         const sampleCount = commitData ? commitData.values.length : 0;
 
-                        let tooltip = `Commit: ${params.name}<br/>Mean: ${currentValue.toLocaleString()} ${unit}`;
+                        let tooltip = `Commit: ${params.name}<br/>${reductionLabel}: ${currentValue.toLocaleString()} ${unit}`;
 
                         if (sampleCount > 0) {
                             tooltip += `<br/>Samples: ${sampleCount}`;
@@ -1268,9 +1350,12 @@
             updateComparisonDisplay(chartName, state, mode, unit) {
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);
+                const reductionType = this.reductionFunctions.get(chartName) || 'mean';
+                const reductionLabel = reductionType.charAt(0).toUpperCase() + reductionType.slice(1);
+
                 if (mode === 'first') {
                     const point = state.selectedPoints[0];
-                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${point.value.toLocaleString()} ${unit})<br/><em>Click another point to compare.</em>`;
+                    comparisonInfo.innerHTML = `<strong>Point 1 selected:</strong> ${point.commit} (${reductionLabel}: ${point.value.toLocaleString()} ${unit})<br/><em>Click another point to compare.</em>`;
                 }
             }
 
@@ -1279,11 +1364,13 @@
                 const diff = point2.value - point1.value;
                 const percentChange = (diff / point1.value * 100);
                 const changeSign = diff > 0 ? '+' : '';
+                const reductionType = this.reductionFunctions.get(chartName) || 'mean';
+                const reductionLabel = reductionType.charAt(0).toUpperCase() + reductionType.slice(1);
 
                 const safeId = this.createSafeId(chartName);
                 const comparisonInfo = document.getElementById(`comparison-${safeId}`);
                 comparisonInfo.innerHTML = `
-                    <strong>Comparison Results:</strong><br/>
+                    <strong>Comparison Results (${reductionLabel}):</strong><br/>
                     <strong>Point 1:</strong> ${point1.commit} → ${point1.value.toLocaleString()} ${unit}<br/>
                     <strong>Point 2:</strong> ${point2.commit} → ${point2.value.toLocaleString()} ${unit}<br/>
                     <strong>Difference:</strong> ${changeSign}${diff.toLocaleString()} ${unit} (${changeSign}${percentChange.toFixed(2)}%)

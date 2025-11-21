@@ -6,35 +6,51 @@ import (
 )
 
 type CalculatedDiff struct {
-	Name       string
-	MetricDiff []MetricDiff
+	Name           string
+	PreviousCommit string
+	CurrentCommit  string
+	MetricDiff     []MetricDiff
 }
 
 type MetricDiff struct {
 	Unit string
 
-	PreviousCommit string
-	CurrentCommit  string
+	PreviousValues []float64
+	CurrentValues  []float64
+}
 
-	PreviousValue float64
-	CurrentValue  float64
+func (m MetricDiff) PreviousValue() float64 {
+	return m.reduce(m.PreviousValues)
+}
+func (m MetricDiff) CurrentValue() float64 {
+	return m.reduce(m.CurrentValues)
+}
+
+func (m MetricDiff) reduce(s []float64) float64 {
+	if d, ok := GetMetricDescriptor(m.Unit); ok {
+		return d.Reduce(s)
+	}
+	return mean(s)
 }
 
 func (m MetricDiff) Ratio() float64 {
-	nan := m.PreviousValue == 0 ||
-		math.IsNaN(m.PreviousValue) ||
-		math.IsNaN(m.CurrentValue)
+	prev, curr := m.PreviousValue(), m.CurrentValue()
+
+	nan := prev == 0 ||
+		math.IsNaN(prev) ||
+		math.IsNaN(curr)
 
 	if nan {
 		return math.NaN()
 	}
 
-	return m.CurrentValue / m.PreviousValue
+	return curr / prev
 }
 
 func (m MetricDiff) Emoji() string {
 	if d, ok := GetMetricDescriptor(m.Unit); ok {
-		switch d.Comparator(m.PreviousValue, m.CurrentValue) {
+		prev, curr := m.PreviousValue(), m.CurrentValue()
+		switch d.Comparator(prev, curr) {
 		case CompareVerdictBetter:
 			return "🟢"
 		case CompareVerdictWorse:
@@ -52,26 +68,36 @@ func Diff(previous, current []Series) []CalculatedDiff {
 	var calculated []CalculatedDiff
 
 	for _, s := range current {
+		var (
+			previousCommit string
+			currentCommit  = s.Measurements[len(s.Measurements)-1].CommitHash
+		)
+
 		idx := slices.IndexFunc(previous, func(v Series) bool {
 			return v.Name == s.Name
 		})
 
 		var md []MetricDiff
 		if idx == -1 {
+			previousCommit = "------"
 			md = metricDiff(
 				Measurement{},
 				s.Measurements[len(s.Measurements)-1],
 			)
 		} else {
+			previousLast := previous[idx].Measurements[len(previous[idx].Measurements)-1]
+			previousCommit = previousLast.CommitHash
 			md = metricDiff(
-				previous[idx].Measurements[len(previous[idx].Measurements)-1],
+				previousLast,
 				s.Measurements[len(s.Measurements)-1],
 			)
 		}
 
 		calculated = append(calculated, CalculatedDiff{
-			Name:       s.Name,
-			MetricDiff: md,
+			Name:           s.Name,
+			PreviousCommit: previousCommit,
+			CurrentCommit:  currentCommit,
+			MetricDiff:     md,
 		})
 	}
 
@@ -80,8 +106,7 @@ func Diff(previous, current []Series) []CalculatedDiff {
 
 func metricDiff(previous, current Measurement) []MetricDiff {
 	var (
-		prevCommit = "------" // Exactly 6 symbols
-		prevValue  = math.NaN()
+		prevValues []float64
 		diff       []MetricDiff
 	)
 
@@ -91,28 +116,15 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 		})
 
 		if idx >= 0 {
-			prevCommit = previous.CommitHash
-			prevValue = mean(previous.Metrics[idx].Values)
+			prevValues = previous.Metrics[idx].Values
 		}
 
 		diff = append(diff, MetricDiff{
-			Unit: cm.Unit,
-
-			PreviousCommit: prevCommit,
-			CurrentCommit:  current.CommitHash,
-
-			PreviousValue: prevValue,
-			CurrentValue:  mean(cm.Values),
+			Unit:           cm.Unit,
+			PreviousValues: prevValues,
+			CurrentValues:  cm.Values,
 		})
 	}
 
 	return diff
-}
-
-func mean(s []float64) float64 {
-	var sum float64
-	for _, v := range s {
-		sum += v
-	}
-	return sum / float64(len(s))
 }
