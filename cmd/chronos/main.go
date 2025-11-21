@@ -88,7 +88,8 @@ func loadConfig(ctx context.Context, r gitops.Repository, branch string) (action
 		for _, unit := range cfg.Units {
 			benchmark.AddMetricDescriptor(
 				benchmark.NewMetricDescriptor(
-					unit.Name, unit.Better, unit.Threshold,
+					unit.Name, unit.Better,
+					unit.Threshold, unit.Reduction,
 				),
 			)
 		}

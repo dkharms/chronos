@@ -30,14 +30,17 @@ const (
 
 type MetricDescriptor struct {
 	Unit       string
+	Reduce     func([]float64) float64
 	Comparator func(float64, float64) CompareVerdict
 }
 
 func NewMetricDescriptor(
-	unit string, better string, threshold float64,
+	unit string, better string,
+	threshold float64, reduce string,
 ) MetricDescriptor {
 	m := MetricDescriptor{
-		Unit: unit,
+		Unit:   unit,
+		Reduce: reductionFn(reduce),
 	}
 
 	switch better {

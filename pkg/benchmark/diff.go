@@ -16,25 +16,42 @@ type MetricDiff struct {
 	PreviousCommit string
 	CurrentCommit  string
 
-	PreviousValue float64
-	CurrentValue  float64
+	PreviousValues []float64
+	CurrentValues  []float64
+}
+
+func (m MetricDiff) PreviousValue() float64 {
+	return m.reduce(m.PreviousValues)
+}
+func (m MetricDiff) CurrentValue() float64 {
+	return m.reduce(m.CurrentValues)
+}
+
+func (m MetricDiff) reduce(s []float64) float64 {
+	if d, ok := GetMetricDescriptor(m.Unit); ok {
+		return d.Reduce(s)
+	}
+	return mean(s)
 }
 
 func (m MetricDiff) Ratio() float64 {
-	nan := m.PreviousValue == 0 ||
-		math.IsNaN(m.PreviousValue) ||
-		math.IsNaN(m.CurrentValue)
+	prev, curr := m.PreviousValue(), m.CurrentValue()
+
+	nan := prev == 0 ||
+		math.IsNaN(prev) ||
+		math.IsNaN(curr)
 
 	if nan {
 		return math.NaN()
 	}
 
-	return m.CurrentValue / m.PreviousValue
+	return curr / prev
 }
 
 func (m MetricDiff) Emoji() string {
 	if d, ok := GetMetricDescriptor(m.Unit); ok {
-		switch d.Comparator(m.PreviousValue, m.CurrentValue) {
+		prev, curr := m.PreviousValue(), m.CurrentValue()
+		switch d.Comparator(prev, curr) {
 		case CompareVerdictBetter:
 			return "🟢"
 		case CompareVerdictWorse:
@@ -81,7 +98,7 @@ func Diff(previous, current []Series) []CalculatedDiff {
 func metricDiff(previous, current Measurement) []MetricDiff {
 	var (
 		prevCommit = "------" // Exactly 6 symbols
-		prevValue  = math.NaN()
+		prevValues []float64
 		diff       []MetricDiff
 	)
 
@@ -92,7 +109,7 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 
 		if idx >= 0 {
 			prevCommit = previous.CommitHash
-			prevValue = mean(previous.Metrics[idx].Values)
+			prevValues = previous.Metrics[idx].Values
 		}
 
 		diff = append(diff, MetricDiff{
@@ -101,18 +118,10 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 			PreviousCommit: prevCommit,
 			CurrentCommit:  current.CommitHash,
 
-			PreviousValue: prevValue,
-			CurrentValue:  mean(cm.Values),
+			PreviousValues: prevValues,
+			CurrentValues:  cm.Values,
 		})
 	}
 
 	return diff
-}
-
-func mean(s []float64) float64 {
-	var sum float64
-	for _, v := range s {
-		sum += v
-	}
-	return sum / float64(len(s))
 }
