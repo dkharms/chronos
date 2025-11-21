@@ -1,13 +1,16 @@
 | Name | Previous | Current | Ratio | Verdict |
 |------|----------|---------|-------|---------|
 {{- range $calc := . }}
-{{ printf "| `%s` | | | | |" $calc.Name }}
+{{ printf "| `%s` | `%s` | `%s` | ---- | ---- |"
+		$calc.Name
+		$calc.PreviousCommit
+		$calc.CurrentCommit
+}}
 {{- range $metric := $calc.MetricDiff }}
-{{- $ratio := $metric.Ratio }}
-{{ printf "| | `%s` `%s` | `%s` `%s` | `%s` | `%s` |"
-		(slice $metric.PreviousCommit 0 6) (printf "%.2f %s" $metric.PreviousValue $metric.Unit)
-		(slice $metric.CurrentCommit 0 6) (printf "%.2f %s" $metric.CurrentValue $metric.Unit)
-		(printf "%.2f" $ratio)
+{{ printf "| ---- | `%s` | `%s` | `%s` | `%s` |"
+		(printf "%.2f %s" $metric.PreviousValue $metric.Unit)
+		(printf "%.2f %s" $metric.CurrentValue $metric.Unit)
+		(printf "%.2f" $metric.Ratio)
 		$metric.Emoji
 }}
 {{- end }}

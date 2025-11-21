@@ -6,15 +6,14 @@ import (
 )
 
 type CalculatedDiff struct {
-	Name       string
-	MetricDiff []MetricDiff
+	Name           string
+	PreviousCommit string
+	CurrentCommit  string
+	MetricDiff     []MetricDiff
 }
 
 type MetricDiff struct {
 	Unit string
-
-	PreviousCommit string
-	CurrentCommit  string
 
 	PreviousValues []float64
 	CurrentValues  []float64
@@ -69,26 +68,36 @@ func Diff(previous, current []Series) []CalculatedDiff {
 	var calculated []CalculatedDiff
 
 	for _, s := range current {
+		var (
+			previousCommit string
+			currentCommit  = s.Measurements[len(s.Measurements)-1].CommitHash
+		)
+
 		idx := slices.IndexFunc(previous, func(v Series) bool {
 			return v.Name == s.Name
 		})
 
 		var md []MetricDiff
 		if idx == -1 {
+			previousCommit = "------"
 			md = metricDiff(
 				Measurement{},
 				s.Measurements[len(s.Measurements)-1],
 			)
 		} else {
+			previousLast := previous[idx].Measurements[len(previous[idx].Measurements)-1]
+			previousCommit = previousLast.CommitHash
 			md = metricDiff(
-				previous[idx].Measurements[len(previous[idx].Measurements)-1],
+				previousLast,
 				s.Measurements[len(s.Measurements)-1],
 			)
 		}
 
 		calculated = append(calculated, CalculatedDiff{
-			Name:       s.Name,
-			MetricDiff: md,
+			Name:           s.Name,
+			PreviousCommit: previousCommit,
+			CurrentCommit:  currentCommit,
+			MetricDiff:     md,
 		})
 	}
 
@@ -97,7 +106,6 @@ func Diff(previous, current []Series) []CalculatedDiff {
 
 func metricDiff(previous, current Measurement) []MetricDiff {
 	var (
-		prevCommit = "------" // Exactly 6 symbols
 		prevValues []float64
 		diff       []MetricDiff
 	)
@@ -108,16 +116,11 @@ func metricDiff(previous, current Measurement) []MetricDiff {
 		})
 
 		if idx >= 0 {
-			prevCommit = previous.CommitHash
 			prevValues = previous.Metrics[idx].Values
 		}
 
 		diff = append(diff, MetricDiff{
-			Unit: cm.Unit,
-
-			PreviousCommit: prevCommit,
-			CurrentCommit:  current.CommitHash,
-
+			Unit:           cm.Unit,
 			PreviousValues: prevValues,
 			CurrentValues:  cm.Values,
 		})
