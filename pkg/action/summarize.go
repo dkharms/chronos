@@ -4,6 +4,8 @@ import (
 	"context"
 	_ "embed"
 	"fmt"
+	"slices"
+	"strings"
 
 	"github.com/sethvargo/go-githubactions"
 
@@ -32,8 +34,13 @@ func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input
 				return nil, "", err
 			}
 
+			diff := benchmark.Diff(series, incoming)
+			slices.SortFunc(diff, func(x, y benchmark.CalculatedDiff) int {
+				return strings.Compare(x.Name, y.Name)
+			})
+
 			return nil, "", githubactions.AddStepSummaryTemplate(
-				summaryTemplate, benchmark.Diff(series, incoming),
+				summaryTemplate, diff,
 			)
 		},
 	)
