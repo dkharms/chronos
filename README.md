@@ -1,12 +1,21 @@
-<div align="center">🕐 chronos is a continuous benchmarking tool that tracks performance metrics over time</div>
-
-<img width="1436" height="931" alt="image" src="https://github.com/user-attachments/assets/5c8b111e-3f86-4d79-8c2c-c4be9e3b604c" />
+<table width="100%" height="100%" valign="middle">
+    <tr valign="middle">
+        <td align="center" width="5%">
+            <img src="https://github.com/user-attachments/assets/43a00858-57b7-4f2f-9f5b-cadee3c7b6b6" alt="chronos-logo" width="64" height="64" />
+        </td>
+        <td width="50%" valign="middle" align="left">
+            <p>chronos is a continuous benchmarking tool that tracks performance metrics over time</p>
+        </td>
+    </tr>
+</table>
 
 ### Features
 
 Here are the features that `chronos` provides:
 - A [UI](https://dkharms.github.io/chronos/benchmarks) with benchmark grouping, filtering, point comparison, and chart screenshots;
 - [Summarization](https://github.com/dkharms/chronos/actions/runs/18197908739#summary-51808947342) of pull request benchmarks (and comparison with the latest one) in GitHub Job Summary;
+
+<img width="1436" height="931" alt="image" src="https://github.com/user-attachments/assets/5c8b111e-3f86-4d79-8c2c-c4be9e3b604c" />
 
 ### Rationale
 
