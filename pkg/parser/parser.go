@@ -16,8 +16,7 @@ type Parser interface {
 }
 
 func New(tool string, r io.Reader) (Parser, error) {
-	switch tool {
-	case "gotool":
+	if tool == "gotool" {
 		return NewGoParser(r), nil
 	}
 	return nil, fmt.Errorf("unknown language-tool %s", tool)
