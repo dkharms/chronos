@@ -48,6 +48,7 @@ runs:
     working-directory: ${{ github.action_path }}
     run: ./chronos
     env:
+      INPUT_LANGUAGE-TOOL: ${{ inputs.language-tool }}
       INPUT_GITHUB-TOKEN: ${{ inputs.github-token }}
       INPUT_BRANCH-STORAGE: ${{ inputs.branch-storage }}
       INPUT_BENCHMARKS-FILE-PATH: ${{ inputs.benchmarks-file-path }}
