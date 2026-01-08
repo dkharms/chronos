@@ -16,7 +16,10 @@ var (
 )
 
 func TestParseGoTool(t *testing.T) {
-	actual := NewGoParser(strings.NewReader(gotoolOutput)).Parse()
+	p, err := New("gotool", strings.NewReader(gotoolOutput))
+	require.NoError(t, err)
+
+	actual := p.Parse()
 	require.Equal(t, []benchmark.Measurement{
 		{
 			Name: "FindSequence_Random/extra-large-16", Metrics: []benchmark.Metric{

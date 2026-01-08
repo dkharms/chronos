@@ -23,7 +23,9 @@ func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input
 		ctx, input.BranchStorage,
 		func() ([]string, string, error) {
 			incoming, err := loadIncomingBenchmarks(
-				input.CommitHash, input.BenchmarksFilepath,
+				input.LanguageTool,
+				input.CommitHash,
+				input.BenchmarksFilepath,
 			)
 			if err != nil {
 				return nil, "", err

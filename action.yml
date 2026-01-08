@@ -4,6 +4,10 @@ description: |
   chronos provides functionality for Continuous Benchmarks
 
 inputs:
+  language-tool:
+    description: |
+      Tool's name which will be used for parsing benchmark results
+    required: true
   github-token:
     description: |
       Your GitHub token
