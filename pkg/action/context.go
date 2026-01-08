@@ -6,6 +6,8 @@ type Input struct {
 	Repository string
 	CommitHash string
 
+	LanguageTool string
+
 	BenchmarksFilepath string
 	BranchStorage      string
 }

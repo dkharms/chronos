@@ -39,6 +39,8 @@ func main() {
 		Repository: repo,
 		CommitHash: gctx.SHA,
 
+		LanguageTool: act.GetInput("language-tool"),
+
 		BenchmarksFilepath: act.GetInput("benchmarks-file-path"),
 		BranchStorage:      act.GetInput("branch-storage"),
 	}

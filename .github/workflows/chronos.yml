@@ -34,6 +34,7 @@ jobs:
         if: ${{ success() && github.event_name == 'pull_request' }}
         uses: dkharms/chronos@main
         with:
+          language-tool: gotool
           github-token: ${{ github.token }}
           benchmarks-file-path: ${{ runner.temp }}/gotool.txt
           action-to-perform: summarize
@@ -44,6 +45,7 @@ jobs:
         if: ${{ success() && github.ref_name == 'main' }}
         uses: dkharms/chronos@main
         with:
+          language-tool: gotool
           github-token: ${{ github.token }}
           benchmarks-file-path: ${{ runner.temp }}/gotool.txt
           action-to-perform: save
@@ -54,5 +56,6 @@ jobs:
         if: ${{ success() && github.ref_name == 'main' }}
         uses: dkharms/chronos@main
         with:
+          language-tool: gotool
           github-token: ${{ github.token }}
           action-to-perform: publish

@@ -38,13 +38,17 @@ func Save(ctx context.Context, r gitops.Repository, cfg Config, input Input) err
 	return nil
 }
 
-func processBenchmarks(cfg Config, gctx Input) error {
+func processBenchmarks(cfg Config, input Input) error {
 	collected, err := loadCollectedBenchmarks(ChronosMergedFilename)
 	if err != nil {
 		return err
 	}
 
-	incoming, err := loadIncomingBenchmarks(gctx.CommitHash, gctx.BenchmarksFilepath)
+	incoming, err := loadIncomingBenchmarks(
+		input.LanguageTool,
+		input.CommitHash,
+		input.BenchmarksFilepath,
+	)
 	if err != nil {
 		return err
 	}
@@ -75,14 +79,18 @@ func loadCollectedBenchmarks(path string) ([]benchmark.Series, error) {
 	return series, nil
 }
 
-func loadIncomingBenchmarks(commitHash, path string) ([]benchmark.Series, error) {
+func loadIncomingBenchmarks(tool, commitHash, path string) ([]benchmark.Series, error) {
 	f, err := os.OpenFile(path, os.O_RDONLY, 0o644)
 	if err != nil {
 		return nil, err
 	}
 	defer f.Close()
 
-	raw := parser.NewGoParser(f).Parse()
+	p, err := parser.New(tool, f)
+	if err != nil {
+		return nil, err
+	}
+	raw := p.Parse()
 
 	var series []benchmark.Series
 	for _, r := range raw {
