@@ -38,6 +38,7 @@ jobs:
           github-token: ${{ github.token }}
           benchmarks-file-path: ${{ runner.temp }}/gotool.txt
           action-to-perform: summarize
+          pr-comment-enabled: true
 
       # Save benchmarks results only when branch
       # was merged to main and previous job was successful.
