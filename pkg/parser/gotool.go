@@ -78,10 +78,6 @@ func (p *goparser) Parse() (results []benchmark.Measurement) {
 func convert(b benchfmt.Result) benchmark.Measurement {
 	r := benchmark.Measurement{
 		Name: b.Name.String(),
-		Metrics: []benchmark.Metric{{
-			Unit:   "iterations",
-			Values: []float64{float64(b.Iters)},
-		}},
 	}
 
 	for _, v := range b.Values {
