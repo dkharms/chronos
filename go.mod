@@ -4,9 +4,11 @@ go 1.25.1
 
 require (
 	github.com/go-git/go-git/v6 v6.0.0-20250925222256-3c570d28a60c
+	github.com/google/go-github/v81 v81.0.0
 	github.com/kkyr/fig v0.5.0
 	github.com/sethvargo/go-githubactions v1.3.1
 	github.com/stretchr/testify v1.11.1
+	golang.org/x/oauth2 v0.34.0
 	golang.org/x/perf v0.0.0-20250909190841-7e13e04d9366
 )
 
@@ -21,6 +23,7 @@ require (
 	github.com/go-git/gcfg/v2 v2.0.2 // indirect
 	github.com/go-git/go-billy/v6 v6.0.0-20250627091229-31e2a16eef30 // indirect
 	github.com/golang/groupcache v0.0.0-20241129210726-2c02b8208cf8 // indirect
+	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/kevinburke/ssh_config v1.4.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/mitchellh/mapstructure v1.5.0 // indirect

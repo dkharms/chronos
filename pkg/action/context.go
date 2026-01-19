@@ -10,4 +10,7 @@ type Input struct {
 
 	BenchmarksFilepath string
 	BranchStorage      string
+
+	EventName string
+	PRNumber  int
 }

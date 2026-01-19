@@ -43,6 +43,9 @@ func main() {
 
 		BenchmarksFilepath: act.GetInput("benchmarks-file-path"),
 		BranchStorage:      act.GetInput("branch-storage"),
+
+		EventName: gctx.EventName,
+		PRNumber:  prNumber(gctx),
 	}
 
 	r, err := gitops.WithRepository(
@@ -73,6 +76,18 @@ func main() {
 	if actErr != nil {
 		exit(actErr)
 	}
+}
+
+func prNumber(gctx *githubactions.GitHubContext) int {
+	prNumber := 0
+	if gctx.EventName == "pull_request" {
+		if prData, ok := gctx.Event["pull_request"].(map[string]any); ok {
+			if num, ok := prData["number"].(float64); ok {
+				prNumber = int(num)
+			}
+		}
+	}
+	return prNumber
 }
 
 func loadConfig(ctx context.Context, r gitops.Repository, branch string) (action.Config, error) {

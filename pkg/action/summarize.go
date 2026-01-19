@@ -19,6 +19,8 @@ var (
 )
 
 func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input) error {
+	var calculatedDiff []benchmark.CalculatedDiff
+
 	err := r.WithBranch(
 		ctx, input.BranchStorage,
 		func() ([]string, string, error) {
@@ -41,6 +43,7 @@ func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input
 				return strings.Compare(x.Name, y.Name)
 			})
 
+			calculatedDiff = diff
 			return nil, "", githubactions.AddStepSummaryTemplate(
 				summaryTemplate, diff,
 			)
@@ -52,6 +55,10 @@ func Summarize(ctx context.Context, r gitops.Repository, cfg Config, input Input
 			"cannot summarize benchmarks: %w",
 			err,
 		)
+	}
+
+	if input.EventName == "pull_request" {
+		return comment(ctx, input, calculatedDiff)
 	}
 
 	return nil
