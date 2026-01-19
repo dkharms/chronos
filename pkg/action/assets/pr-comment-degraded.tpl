@@ -1,6 +1,10 @@
 ### 🔴 Performance Degradation
 
-The following benchmarks have **degraded** compared to the previous run:
+Some benchmarks have degraded compared to the previous run.
+Click on `Show table` button to see full list of degraded benchmarks.
+
+<details>
+<summary>Show table</summary>
 
 | Name | Previous | Current | Ratio | Verdict |
 |------|----------|---------|-------|---------|
@@ -19,3 +23,5 @@ The following benchmarks have **degraded** compared to the previous run:
 }}
 {{- end }}
 {{- end }}
+
+</details>
